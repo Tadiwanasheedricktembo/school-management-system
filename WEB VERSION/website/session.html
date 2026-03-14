@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Session Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    .login-section {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+
+    .login-section h3 {
+      margin-top: 0;
+    }
+
+    .login-section input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .controls input {
+      margin-right: 5px;
+      margin-bottom: 8px;
+      padding: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button.refresh {
+      background-color: #008CBA;
+    }
+
+    button.refresh:hover {
+      background-color: #007399;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .session-info {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .session-info h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+
+    .session-detail {
+      margin-bottom: 10px;
+    }
+
+    .session-detail strong {
+      color: #333;
+    }
+
+    .qr-container {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .qr-container h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+    }
+
+    #qrImage {
+      max-width: 300px;
+      height: auto;
+    }
+
+    .loading {
+      padding: 20px;
+      color: #666;
+      text-align: center;
+    }
+
+    .error {
+      padding: 20px;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 4px;
+      color: #721c24;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      padding: 12px;
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 4px;
+      color: #155724;
+      font-size: 14px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    #historyTable {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #historyTable th,
+    #historyTable td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    #historyTable tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    #historyTable tr.active {
+      background-color: #e0f7fa;
+    }
+
+    #historyTable button {
+      padding: 5px 10px;
+      font-size: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+
+    #historyTable button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Session Manager</h2>
+
+  <div id="loginSection" class="login-section">
+    <h3>Lecturer Login</h3>
+    <input id="usernameInput" type="text" placeholder="Username" required>
+    <input id="passwordInput" type="password" placeholder="Password" required>
+    <button type="button" onclick="login()">Login</button>
+    <div id="loginMessage"></div>
+  </div>
+
+  <div id="mainContent" style="display:none;">
+    <div class="controls">
+      <input id="courseNameInput" placeholder="Course Name">
+      <input id="classNameInput" placeholder="Class Name">
+      <input id="lecturerNameInput" placeholder="Lecturer Name">
+      <input id="noteInput" placeholder="Note">
+      <button type="button" onclick="createNewSession()">Create New Session</button>
+      <button type="button" class="refresh" id="refreshBtn" onclick="refreshQR()" disabled>Refresh QR</button>
+      <button type="button" id="endBtn" onclick="endSession()" disabled>End Session</button>
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="message"></div>
+
+    <div id="sessionInfo" class="session-info" style="display:none;">
+      <h3>Current Session</h3>
+      <div class="session-detail">
+        <strong>Session ID:</strong> <span id="sessionId">-</span>
+      </div>
+      <div class="session-detail">
+        <strong>Created:</strong> <span id="sessionCreated">-</span>
+      </div>
+      <div class="session-detail">
+        <strong>Attendance Window:</strong> <span id="sessionWindow">-</span> minutes
+      </div>
+      <div class="session-detail">
+        <strong>Closes At:</strong> <span id="sessionCloses">-</span>
+      </div>
+      <div class="session-detail">
+        <strong>Time Remaining:</strong> <span id="sessionRemaining">-</span>
+      </div>
+      <div class="session-detail">
+        <strong>Label:</strong> <span id="sessionLabel">-</span>
+      </div>
+      <div class="session-detail">
+        <strong>Status:</strong> <span id="sessionStatus">-</span>
+      </div>
+    </div>
+
+    <div id="historySection" style="display:none;">
+      <h3>Session History</h3>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Session ID</th>
+            <th>Label</th>
+            <th>Created At</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <div id="qrContainer" class="qr-container" style="display:none;">
+      <h3>QR Code for Attendance</h3>
+      <img id="qrImage" width="300" alt="QR Code">
+    </div>
+  </div>
+
+  <script>
+    let authToken = localStorage.getItem('authToken');
+    let currentSessionId = null;
+    let sessionCreatedAt = null;
+    let sessionWindowMinutes = 0;
+    let countdownInterval = null;
+    let sessionIsClosed = false;
+
+    window.onload = function () {
+      if (authToken) {
+        showMainContent();
+        loadHistory();
+      } else {
+        showLogin();
+      }
+    };
+
+    function showLogin() {
+      const loginSection = document.getElementById('loginSection');
+      const mainContent = document.getElementById('mainContent');
+      if (loginSection) loginSection.style.display = 'block';
+      if (mainContent) mainContent.style.display = 'none';
+    }
+
+    function showMainContent() {
+      const loginSection = document.getElementById('loginSection');
+      const mainContent = document.getElementById('mainContent');
+      if (loginSection) loginSection.style.display = 'none';
+      if (mainContent) mainContent.style.display = 'block';
+    }
+
+    async function login() {
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      const messageDiv = document.getElementById('loginMessage');
+
+      console.log('[LOGIN] Button clicked');
+      console.log('[LOGIN] Username:', username);
+      console.log('[LOGIN] Password:', password ? '****' : 'empty');
+
+      if (!username || !password) {
+        messageDiv.innerHTML = '<div style="color:red;">Please enter both username and password</div>';
+        return;
+      }
+
+      const loginUrl = 'http://localhost:3000/api/auth/login';
+      const loginPayload = { username, password };
+
+      console.log('[LOGIN] URL:', loginUrl);
+      console.log('[LOGIN] Payload:', JSON.stringify(loginPayload));
+
+      try {
+        const response = await fetch(loginUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(loginPayload)
+        });
+
+        console.log('[LOGIN] Response status:', response.status);
+        console.log('[LOGIN] Response ok:', response.ok);
+
+        const data = await response.json();
+        console.log('[LOGIN] Response body:', data);
+
+        if (response.ok && data.token) {
+          console.log('[LOGIN] Success! Token:', data.token.substring(0, 20) + '...');
+          authToken = data.token;
+          localStorage.setItem('authToken', authToken);
+          messageDiv.innerHTML = '<div style="color:green;">Login successful!</div>';
+
+          setTimeout(() => {
+            showMainContent();
+            loadHistory();
+          }, 500);
+        } else {
+          const errorMsg = data.message || 'Login failed - no token received';
+          console.log('[LOGIN] Error:', errorMsg);
+          messageDiv.innerHTML = '<div style="color:red;">' + errorMsg + '</div>';
+        }
+      } catch (error) {
+        console.error('[LOGIN] Network error:', error);
+        console.error('[LOGIN] Error message:', error.message);
+        console.error('[LOGIN] Error stack:', error.stack);
+        messageDiv.innerHTML = '<div style="color:red;">Network error: ' + error.message + '</div>';
+      }
+    }
+
+    function logout() {
+      authToken = null;
+      localStorage.removeItem('authToken');
+      showLogin();
+    }
+
+    function showMessage(type, text) {
+      const messageDiv = document.getElementById("message");
+      if (messageDiv) {
+        messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
+      }
+    }
+
+    async function createNewSession() {
+      showMessage("loading", "Creating new session...");
+
+      try {
+        const courseName = document.getElementById("courseNameInput").value.trim();
+        const className = document.getElementById("classNameInput").value.trim();
+        const lecturerName = document.getElementById("lecturerNameInput").value.trim();
+        const note = document.getElementById("noteInput").value.trim();
+
+        const createResponse = await fetch("http://localhost:3000/api/session/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            course_name: courseName,
+            class_name: className,
+            lecturer_name: lecturerName,
+            note: note
+          })
+        });
+
+        const sessionData = await createResponse.json();
+
+        if (!createResponse.ok) {
+          showMessage("error", "Error creating session: " + (sessionData.message || "Unknown error"));
+          return;
+        }
+
+        currentSessionId = sessionData.session_id;
+        sessionIsClosed = false;
+
+        const createdAt = sessionData.created_at
+          ? new Date(sessionData.created_at)
+          : new Date();
+
+        sessionCreatedAt = createdAt;
+        sessionWindowMinutes = sessionData.attendance_window_minutes || 10;
+
+        const label = sessionData.label || `Session ${sessionData.session_id}`;
+
+        updateSessionInfo(
+          sessionData.session_id,
+          createdAt.toISOString(),
+          sessionWindowMinutes,
+          sessionData.is_closed,
+          label
+        );
+
+        await loadQR();
+        await loadHistory();
+
+        document.getElementById("courseNameInput").value = "";
+        document.getElementById("classNameInput").value = "";
+        document.getElementById("lecturerNameInput").value = "";
+        document.getElementById("noteInput").value = "";
+
+        showMessage("success", `Session ${sessionData.session_id} created successfully!`);
+      } catch (error) {
+        console.error("Error creating session:", error);
+        showMessage(
+          "error",
+          "Error: " + error.message + ". Make sure the backend server is running on localhost:3000"
+        );
+      }
+    }
+
+    async function endSession() {
+      if (!currentSessionId) return;
+
+      showMessage("loading", "Ending session...");
+
+      try {
+        const resp = await fetch("http://localhost:3000/api/session/end", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            session_id: currentSessionId
+          })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          showMessage("error", "Error ending session: " + (data.message || "Unknown"));
+          return;
+        }
+
+        sessionIsClosed = true;
+        updateControls();
+
+        document.getElementById("sessionStatus").textContent = "Closed";
+        document.getElementById("sessionRemaining").textContent = "00:00";
+
+        if (countdownInterval) {
+          clearInterval(countdownInterval);
+        }
+
+        showMessage("success", "Session closed successfully.");
+        await loadHistory();
+      } catch (err) {
+        console.error("Error ending session", err);
+        showMessage("error", "Failed to end session");
+      }
+    }
+
+    async function loadQR() {
+      if (!currentSessionId || sessionIsClosed) {
+        return;
+      }
+
+      try {
+        console.log("[QR_LOAD] Loading QR for session:", currentSessionId);
+
+        const response = await fetch(
+          `http://localhost:3000/api/qr/generate?session_id=${encodeURIComponent(currentSessionId)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Error loading QR:", data);
+          showMessage("error", "Failed to load QR: " + (data.message || "Unknown error"));
+          return;
+        }
+
+        document.getElementById("qrImage").src = data.qr_code;
+        document.getElementById("qrContainer").style.display = "block";
+
+        console.log(`[QR_REFRESH] QR refreshed for session ${currentSessionId} at ${new Date().toISOString()}`);
+      } catch (error) {
+        console.error("Error loading QR:", error);
+        showMessage("error", "Error loading QR code");
+      }
+    }
+
+    function refreshQR() {
+      if (currentSessionId && !sessionIsClosed) {
+        loadQR();
+      }
+    }
+
+    function updateSessionInfo(sessionId, createdAtIso, windowMinutes, isClosed, label) {
+      const sessionInfo = document.getElementById("sessionInfo");
+      const sessionIdSpan = document.getElementById("sessionId");
+      const sessionCreatedSpan = document.getElementById("sessionCreated");
+      const sessionWindowSpan = document.getElementById("sessionWindow");
+      const sessionClosesSpan = document.getElementById("sessionCloses");
+      const sessionRemainingSpan = document.getElementById("sessionRemaining");
+      const sessionStatusSpan = document.getElementById("sessionStatus");
+      const sessionLabelSpan = document.getElementById("sessionLabel");
+
+      sessionIdSpan.textContent = sessionId;
+      sessionLabelSpan.textContent = label || `Session ${sessionId}`;
+
+      if (createdAtIso) {
+        sessionCreatedAt = new Date(createdAtIso);
+      } else {
+        sessionCreatedAt = new Date();
+      }
+
+      sessionCreatedSpan.textContent = sessionCreatedAt.toLocaleString();
+
+      if (windowMinutes !== undefined && windowMinutes !== null) {
+        sessionWindowMinutes = windowMinutes;
+      } else {
+        sessionWindowMinutes = 10;
+      }
+
+      sessionWindowSpan.textContent = sessionWindowMinutes;
+
+      const closesAt = new Date(sessionCreatedAt.getTime() + sessionWindowMinutes * 60 * 1000);
+      sessionClosesSpan.textContent = closesAt.toLocaleString();
+
+      if (typeof isClosed !== "undefined") {
+        sessionIsClosed = !!isClosed;
+      }
+
+      updateControls();
+      startCountdown(closesAt, sessionRemainingSpan, sessionStatusSpan);
+
+      if (sessionInfo) {
+        sessionInfo.style.display = "block";
+      }
+    }
+
+    function startCountdown(closesAt, remainingElem, statusElem) {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+
+      function tick() {
+        if (sessionIsClosed) {
+          remainingElem.textContent = "00:00";
+          statusElem.textContent = "Closed";
+          clearInterval(countdownInterval);
+          return;
+        }
+
+        const now = new Date();
+        const diff = closesAt - now;
+
+        if (diff <= 0) {
+          remainingElem.textContent = "00:00";
+          statusElem.textContent = "Closed";
+          sessionIsClosed = true;
+          updateControls();
+          clearInterval(countdownInterval);
+          return;
+        }
+
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+
+        remainingElem.textContent =
+          String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        statusElem.textContent = "Open";
+      }
+
+      tick();
+      countdownInterval = setInterval(tick, 1000);
+    }
+
+    function updateControls() {
+      const refreshBtn = document.getElementById("refreshBtn");
+      const endBtn = document.getElementById("endBtn");
+
+      refreshBtn.disabled = !currentSessionId || sessionIsClosed;
+      endBtn.disabled = !currentSessionId || sessionIsClosed;
+    }
+
+    setInterval(() => {
+      if (currentSessionId && !sessionIsClosed) {
+        console.log("[QR_REFRESH] Auto-refreshing QR for session:", currentSessionId);
+        loadQR();
+      }
+    }, 20000);
+
+    async function loadHistory() {
+      console.log("loadHistory called");
+
+      try {
+        const resp = await fetch("http://localhost:3000/api/session/list");
+        console.log("history response", resp.status);
+
+        const data = await resp.json();
+        console.log("history data", data);
+
+        if (!resp.ok) {
+          console.error("Error fetching history", data);
+          showMessage("error", "Error fetching history: " + (data.message || "Unknown error"));
+          return;
+        }
+
+        const body = document.getElementById("historyBody");
+        body.innerHTML = "";
+
+        const sessions = Array.isArray(data.sessions) ? data.sessions : [];
+
+        sessions.forEach((sess) => {
+          const tr = document.createElement("tr");
+
+          if (sess.session_id === currentSessionId) {
+            tr.classList.add("active");
+          }
+
+          const idTd = document.createElement("td");
+          idTd.textContent = sess.session_id;
+
+          const labelTd = document.createElement("td");
+          labelTd.textContent = sess.label || `Session ${sess.session_id}`;
+
+          const createdTd = document.createElement("td");
+          createdTd.textContent = sess.created_at
+            ? new Date(sess.created_at).toLocaleString()
+            : "-";
+
+          const statusTd = document.createElement("td");
+          statusTd.textContent = sess.is_closed ? "Closed" : "Open";
+
+          const actionTd = document.createElement("td");
+
+          const loadBtn = document.createElement("button");
+          loadBtn.textContent = "Load QR";
+          loadBtn.onclick = async () => {
+            currentSessionId = sess.session_id;
+
+            updateSessionInfo(
+              sess.session_id,
+              sess.created_at,
+              sess.attendance_window_minutes || 10,
+              sess.is_closed,
+              sess.label
+            );
+
+            if (!sess.is_closed) {
+              await loadQR();
+            } else {
+              document.getElementById("qrContainer").style.display = "none";
+            }
+
+            Array.from(body.children).forEach((row) => row.classList.remove("active"));
+            tr.classList.add("active");
+          };
+          actionTd.appendChild(loadBtn);
+
+          const viewBtn = document.createElement("button");
+          viewBtn.textContent = "View Attendance";
+          viewBtn.onclick = () => {
+            window.open(`attendance.html?session_id=${encodeURIComponent(sess.session_id)}`, "_blank");
+          };
+          actionTd.appendChild(viewBtn);
+
+          tr.appendChild(idTd);
+          tr.appendChild(labelTd);
+          tr.appendChild(createdTd);
+          tr.appendChild(statusTd);
+          tr.appendChild(actionTd);
+
+          body.appendChild(tr);
+        });
+
+        document.getElementById("historySection").style.display = "block";
+      } catch (e) {
+        console.error("Failed loading history", e);
+        showMessage("error", "Failed loading history");
+      }
+    }
+  </script>
+
+</body>
+</html>

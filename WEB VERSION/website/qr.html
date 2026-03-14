@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Attendance QR</title>
+</head>
+
+<body>
+
+<h2>Scan QR for Attendance</h2>
+
+<img id="qrImage" width="300">
+
+<script>
+
+async function loadQR(){
+
+    // the backend server in this workspace defaults to port 3000
+    // make sure it is running before opening this page
+    const response = await fetch("http://localhost:3000/api/qr/generate?session_id=1");
+    const data = await response.json();
+
+    // backend returns `qr_code` field containing the data URL
+    document.getElementById("qrImage").src = data.qr_code;
+
+}
+
+loadQR();
+
+/* refresh QR every 100 seconds to avoid invalidating tokens during active scanning */
+/* token expiry time is 120 seconds, so there's a 20 second buffer before a new QR is generated */
+setInterval(loadQR, 100000);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,506 @@
+[
+  {
+    "session_id": 1,
+    "created_at": "2026-03-08T13:01:40.710Z"
+  },
+  {
+    "session_id": 2,
+    "created_at": "2026-03-08T13:01:43.678Z"
+  },
+  {
+    "session_id": 3,
+    "created_at": "2026-03-08T13:01:50.528Z"
+  },
+  {
+    "session_id": 4,
+    "created_at": "2026-03-08T13:05:20.582Z"
+  },
+  {
+    "session_id": 5,
+    "created_at": "2026-03-08T13:07:50.401Z"
+  },
+  {
+    "session_id": 6,
+    "created_at": "2026-03-08T13:08:21.247Z"
+  },
+  {
+    "session_id": 7,
+    "created_at": "2026-03-08T13:08:22.350Z"
+  },
+  {
+    "session_id": 8,
+    "created_at": "2026-03-08T13:14:40.570Z"
+  },
+  {
+    "session_id": 9,
+    "created_at": "2026-03-08T13:57:59.895Z"
+  },
+  {
+    "session_id": 10,
+    "created_at": "2026-03-08T14:32:47.060Z"
+  },
+  {
+    "session_id": 11,
+    "created_at": "2026-03-08T14:41:26.898Z"
+  },
+  {
+    "session_id": 12,
+    "created_at": "2026-03-08T14:44:16.652Z",
+    "attendance_window_minutes": 10
+  },
+  {
+    "session_id": 13,
+    "created_at": "2026-03-08T14:59:43.062Z",
+    "attendance_window_minutes": 10
+  },
+  {
+    "session_id": 14,
+    "created_at": "2026-03-09T10:31:47.811Z",
+    "attendance_window_minutes": 10
+  },
+  {
+    "session_id": 15,
+    "created_at": "2026-03-09T10:32:37.968Z",
+    "attendance_window_minutes": 10
+  },
+  {
+    "session_id": 16,
+    "created_at": "2026-03-09T10:46:45.146Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "DBMS Theory",
+    "class_name": "Section A",
+    "lecturer_name": "Dr. Smith",
+    "note": "First lecture",
+    "label": "DBMS Theory - Section A"
+  },
+  {
+    "session_id": 17,
+    "created_at": "2026-03-09T11:05:24.103Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "SOFTWARE ENGINEERING",
+    "class_name": "BG90",
+    "lecturer_name": "MR EDRICK",
+    "note": "",
+    "label": "SOFTWARE ENGINEERING - BG90"
+  },
+  {
+    "session_id": 18,
+    "created_at": "2026-03-09T11:13:57.248Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 18"
+  },
+  {
+    "session_id": 19,
+    "created_at": "2026-03-09T11:15:08.601Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 19"
+  },
+  {
+    "session_id": 20,
+    "created_at": "2026-03-09T15:52:09.094Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "Cyber Security",
+    "class_name": "G09",
+    "lecturer_name": "Jani",
+    "note": "GOOD CLASS",
+    "label": "Cyber Security - G09"
+  },
+  {
+    "session_id": 21,
+    "created_at": "2026-03-09T15:55:45.719Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "CODING",
+    "class_name": "BSC",
+    "lecturer_name": "GANGAA",
+    "note": "GANGA LECTURE",
+    "label": "CODING - BSC"
+  },
+  {
+    "session_id": 22,
+    "created_at": "2026-03-09T15:56:47.520Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 22"
+  },
+  {
+    "session_id": 23,
+    "created_at": "2026-03-09T15:56:48.867Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 23"
+  },
+  {
+    "session_id": 24,
+    "created_at": "2026-03-09T15:57:17.496Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 24"
+  },
+  {
+    "session_id": 25,
+    "created_at": "2026-03-09T15:57:18.040Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 25"
+  },
+  {
+    "session_id": 26,
+    "created_at": "2026-03-09T15:57:18.236Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 26"
+  },
+  {
+    "session_id": 27,
+    "created_at": "2026-03-09T15:57:21.181Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 27"
+  },
+  {
+    "session_id": 28,
+    "created_at": "2026-03-09T15:57:29.909Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "r",
+    "class_name": "r",
+    "lecturer_name": "r",
+    "note": "r",
+    "label": "r - r"
+  },
+  {
+    "session_id": 29,
+    "created_at": "2026-03-09T15:57:43.096Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "CODING",
+    "class_name": "BSC",
+    "lecturer_name": "GANGAA",
+    "note": "GANGA LECTURE",
+    "label": "CODING - BSC"
+  },
+  {
+    "session_id": 30,
+    "created_at": "2026-03-09T15:57:43.614Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "CODING",
+    "class_name": "BSC",
+    "lecturer_name": "GANGAA",
+    "note": "GANGA LECTURE",
+    "label": "CODING - BSC"
+  },
+  {
+    "session_id": 31,
+    "created_at": "2026-03-09T15:57:43.858Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "CODING",
+    "class_name": "BSC",
+    "lecturer_name": "GANGAA",
+    "note": "GANGA LECTURE",
+    "label": "CODING - BSC"
+  },
+  {
+    "session_id": 32,
+    "created_at": "2026-03-09T16:09:54.741Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 32"
+  },
+  {
+    "session_id": 33,
+    "created_at": "2026-03-09T16:10:21.613Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 33"
+  },
+  {
+    "session_id": 34,
+    "created_at": "2026-03-09T16:12:08.500Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 34"
+  },
+  {
+    "session_id": 35,
+    "created_at": "2026-03-09T16:19:32.939Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 35"
+  },
+  {
+    "session_id": 36,
+    "created_at": "2026-03-09T17:35:05.031Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 36"
+  },
+  {
+    "session_id": 37,
+    "created_at": "2026-03-09T17:39:18.735Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 37"
+  },
+  {
+    "session_id": 38,
+    "created_at": "2026-03-09T17:43:54.855Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 38"
+  },
+  {
+    "session_id": 39,
+    "created_at": "2026-03-10T14:59:54.811Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "RDBMS",
+    "class_name": "CT09",
+    "lecturer_name": "Anupama",
+    "note": "DBMS",
+    "label": "RDBMS - CT09"
+  },
+  {
+    "session_id": 40,
+    "created_at": "2026-03-10T15:08:16.747Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "Monday",
+    "class_name": "csdhbjhd",
+    "lecturer_name": "vdvhjdjhds",
+    "note": "vcxhcxhbj",
+    "label": "Monday - csdhbjhd"
+  },
+  {
+    "session_id": 41,
+    "created_at": "2026-03-10T15:21:34.863Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 41"
+  },
+  {
+    "session_id": 42,
+    "created_at": "2026-03-10T15:51:47.559Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 42"
+  },
+  {
+    "session_id": 43,
+    "created_at": "2026-03-10T15:55:14.524Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 43"
+  },
+  {
+    "session_id": 44,
+    "created_at": "2026-03-10T16:07:42.352Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 44"
+  },
+  {
+    "session_id": 45,
+    "created_at": "2026-03-10T16:41:21.766Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 45"
+  },
+  {
+    "session_id": 46,
+    "created_at": "2026-03-10T16:56:34.171Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 46"
+  },
+  {
+    "session_id": 47,
+    "created_at": "2026-03-10T17:10:32.321Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 47"
+  },
+  {
+    "session_id": 48,
+    "created_at": "2026-03-10T17:14:40.909Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 48"
+  },
+  {
+    "session_id": 49,
+    "created_at": "2026-03-10T17:23:02.682Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 49"
+  },
+  {
+    "session_id": 50,
+    "created_at": "2026-03-10T18:27:53.174Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 50"
+  },
+  {
+    "session_id": 51,
+    "created_at": "2026-03-10T18:40:04.556Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 51"
+  },
+  {
+    "session_id": 52,
+    "created_at": "2026-03-10T18:48:30.990Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 52"
+  },
+  {
+    "session_id": 53,
+    "created_at": "2026-03-10T20:14:05.994Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 53"
+  },
+  {
+    "session_id": 54,
+    "created_at": "2026-03-10T20:28:34.111Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 54"
+  },
+  {
+    "session_id": 55,
+    "created_at": "2026-03-10T20:39:10.072Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 55"
+  }
+]
