@@ -1,0 +1,15 @@
+# Node
+node_modules/
+.env
+dist/
+build/
+
+# Android
+.gradle/
+local.properties
+*.apk
+*.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
