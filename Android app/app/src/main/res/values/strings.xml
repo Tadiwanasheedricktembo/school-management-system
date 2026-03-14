@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">QR Attendance</string>
+    <string name="qr_attendance">QR Attendance</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="scan_prompt">Scan a QR code to mark attendance</string>
+    <string name="submitting_attendance">Submitting attendance...</string>
+    <string name="scan_qr_prompt">Scan a dynamic attendance QR code</string>
+    <string name="enter_roll_number">Enter Roll Number</string>
+    <string name="error_empty_roll">Please enter your roll number</string>
+</resources>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_dashboard">
+
+    <fragment
+        android:id="@+id/nav_dashboard"
+        android:name="com.querycubix.universityattendance.ui.dashboard.DashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/nav_calendar"
+        android:name="com.querycubix.universityattendance.ui.academics.TimetableFragment"
+        android:label="Timetable"
+        tools:layout="@layout/fragment_timetable" />
+
+    <fragment
+        android:id="@+id/nav_portal"
+        android:name="com.querycubix.universityattendance.ui.academics.AttendanceFragment"
+        android:label="Attendance"
+        tools:layout="@layout/fragment_attendance" />
+
+    <fragment
+        android:id="@+id/nav_finance"
+        android:name="com.querycubix.universityattendance.ui.finance.FinanceFragment"
+        android:label="Finance"
+        tools:layout="@layout/fragment_finance" />
+
+    <fragment
+        android:id="@+id/nav_forms"
+        android:name="com.querycubix.universityattendance.ui.assessment.AssessmentFragment"
+        android:label="Assessment"
+        tools:layout="@layout/fragment_assessment" />
+
+    <fragment
+        android:id="@+id/nav_notifications"
+        android:name="com.querycubix.universityattendance.ui.notifications.NotificationsFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/nav_contact"
+        android:name="com.querycubix.universityattendance.ui.support.SupportFragment"
+        android:label="Support"
+        tools:layout="@layout/fragment_support" />
+
+</navigation>
