@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const Token = require('../models/Token');
+const SessionController = require('../controllers/sessionController');
 
 class TokenService {
   // Generate a new token for a session
@@ -61,8 +62,28 @@ class TokenService {
           return callback(null, { valid: false, reason: 'QR expired', session_id: tokenRow.session_id });
         }
 
-        console.log(`  ✅ VALID`);
-        callback(null, { valid: true, session_id: tokenRow.session_id });
+        // Ensure session is still active (server time is source of truth)
+        SessionController.getSessionById(tokenRow.session_id, (err, session) => {
+          if (err) {
+            return callback(err);
+          }
+
+          if (!session) {
+            console.log(`[TOKEN_INVALID] Session not found for token: ${token}`);
+            return callback(null, { valid: false, reason: 'Invalid session' });
+          }
+
+          if (session.is_closed) {
+            const reason = SessionController.isExpired(session)
+              ? 'Session has expired and is now closed'
+              : 'Session closed';
+            console.log(`[TOKEN_INVALID] ${reason} for token: ${token}`);
+            return callback(null, { valid: false, reason });
+          }
+
+          console.log(`  ✅ VALID`);
+          callback(null, { valid: true, session_id: tokenRow.session_id });
+        });
       });
     });
   }

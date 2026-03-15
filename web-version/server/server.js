@@ -9,6 +9,7 @@ require('./config/database');
 const qrRoutes = require('./routes/qrRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const SessionController = require('./controllers/sessionController');
 const { router: authRoutes, verifyLecturer } = require('./controllers/authController');
 
 const app = express();
@@ -68,6 +69,9 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
+
+  // Periodically close any sessions that have reached their expiry time
+  SessionController.startExpiryWatcher();
 });
 
 module.exports = app;

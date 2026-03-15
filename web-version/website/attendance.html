@@ -340,11 +340,13 @@
 
         async function loadRecords(){
             if (!checkAuth()) return;
-            const table=document.getElementById("recordsTable")
-            const body=document.getElementById("recordsBody")
-            const noRecords=document.getElementById("noRecords")
+            const table=document.getElementById("recordsTable");
+            const body=document.getElementById("recordsBody");
+            const noRecords=document.getElementById("noRecords");
+            const noMatching=document.getElementById("noMatchingRecords");
             const urlParams = new URLSearchParams(window.location.search);
             const initialSession = urlParams.get('session_id');
+            const authToken = localStorage.getItem('authToken');
 
             try {
                 const sessResp = await fetch('http://localhost:3000/api/session/list');
@@ -356,44 +358,59 @@
                 }
             } catch (e) { console.warn('Labels error', e); }
 
-            body.innerHTML=""
-            table.style.display="none"
-            noRecords.style.display="none"
+            body.innerHTML="";
+            table.style.display="none";
+            noRecords.style.display="none";
+            noMatching.style.display="none";
+
+            const recordsUrl = "http://localhost:3000/api/attendance/records";
+            console.log('[ATTENDANCE_RECORDS] Request URL:', recordsUrl);
 
             try {
-                const response=await fetch("http://localhost:3000/api/attendance/records")
-                const data=await response.json()
-                allRecords = data.records;
+                const response = await fetch(recordsUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                console.log('[ATTENDANCE_RECORDS] Response status:', response.status);
 
-                if(!data.records || data.records.length===0){
-                    noRecords.style.display="block"
-                    return
+                const result = await response.json();
+                console.log('[ATTENDANCE_RECORDS] Parsed JSON:', result);
+
+                // Backend GET /api/attendance/records returns { status: "success", records: [...] }
+                const records = Array.isArray(result.records) ? result.records : [];
+                allRecords = records;
+
+                if (!response.ok || records.length === 0) {
+                    noRecords.style.display="block";
+                    console.log('[ATTENDANCE_RECORDS] Number of records rendered: 0');
+                    return;
                 }
 
-                data.records.forEach((record)=>{
-                    const row=document.createElement("tr")
+                records.forEach((record)=>{
+                    const row=document.createElement("tr");
                     row.innerHTML=`
-                        <td style="font-weight:600">${record.roll_number}</td>
+                        <td style="font-weight:600">${record.roll_number || '-'}</td>
                         <td><span style="color:var(--text-muted)">#</span>${record.session_id}</td>
-                        <td>${new Date(record.scan_time).toLocaleString()}</td>
-                        <td><span class="status-pill">${record.status}</span></td>
+                        <td>${record.scan_time ? new Date(record.scan_time).toLocaleString() : '-'}</td>
+                        <td><span class="status-pill">${record.status || 'present'}</span></td>
                         <td>
                             <div class="btn-group">
                                 ${record.selfie ? `<button class="view-selfie-btn">Selfie</button>` : '<span style="color:#94a3b8; font-size:0.7rem">No Photo</span>'}
                                 ${record.latitude && record.longitude ? `<button onclick="viewLocation(${record.latitude}, ${record.longitude})">Map</button>` : ''}
                             </div>
                         </td>
-                    `
-                    body.appendChild(row)
+                    `;
+                    body.appendChild(row);
 
                     if (record.selfie) {
                         const selfieBtn = row.querySelector('.view-selfie-btn');
                         selfieBtn.onclick = () => viewSelfie(record.selfie);
                     }
-                })
+                });
 
-                table.style.display="table"
-                populateSessionFilter(data.records)
+                table.style.display="table";
+                populateSessionFilter(records);
 
                 if(initialSession){
                     const filt=document.getElementById('sessionFilter');
@@ -402,9 +419,10 @@
                         filterTable();
                     }
                 }
-                await updateSummaryCards(data.records)
+                await updateSummaryCards(records);
+                console.log('[ATTENDANCE_RECORDS] Number of records rendered:', records.length);
             } catch(err){
-                console.error(err);
+                console.error('[ATTENDANCE_RECORDS] Error loading records:', err);
                 alert("Error loading records");
             }
         }

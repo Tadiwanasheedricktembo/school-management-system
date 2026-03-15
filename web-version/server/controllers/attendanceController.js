@@ -128,16 +128,36 @@ class AttendanceController {
 
   // Mark attendance endpoint
   static markAttendance(req, res) {
-    const {
-      roll_number,
-      token,
-      device_id,
-      latitude,
-      longitude,
-      selfie,
-      selfie_path,
-      selfie_metadata
-    } = req.body;
+    console.log('[ATTENDANCE_BODY_RAW]', JSON.stringify(req.body, null, 2));
+
+    const rawBody = req.body || {};
+    const roll_number =
+      rawBody.roll_number ||
+      rawBody.student_id ||
+      rawBody.studentId ||
+      rawBody.rollNumber ||
+      null;
+    const token =
+      rawBody.token ||
+      rawBody.qr_token ||
+      rawBody.qrToken ||
+      null;
+    const device_id =
+      rawBody.device_id ||
+      rawBody.deviceId ||
+      null;
+    const latitude =
+      rawBody.latitude ||
+      rawBody.lat ||
+      null;
+    const longitude =
+      rawBody.longitude ||
+      rawBody.lng ||
+      rawBody.lon ||
+      null;
+    const selfie = rawBody.selfie;
+    const selfie_path = rawBody.selfie_path;
+    const selfie_metadata = rawBody.selfie_metadata;
 
     // Normalize selfie fields: prioritize 'selfie', then 'selfie_metadata', then 'selfie_path'
     const selfieValue = selfie || selfie_metadata || selfie_path || '';
@@ -149,6 +169,11 @@ class AttendanceController {
 
     // only roll_number and token remain required
     if (!roll_number || !token) {
+      console.warn(
+        '[ATTENDANCE_VALIDATION] Missing required fields. ' +
+          `Derived roll_number=${roll_number}, token=${token}. ` +
+          `Incoming keys=${Object.keys(rawBody).join(', ')}`
+      );
       return res.status(400).json({
         status: 'error',
         message: 'Roll number and token are required'
@@ -215,21 +240,31 @@ class AttendanceController {
         console.log(`  Window closes: ${windowCloseTime.toISOString()}`);
         console.log(`  Window duration: ${session.attendance_window_minutes} minutes`);
 
-        // check if session was manually closed
+        // check if session is closed (manual or because it expired)
+        const sessionExpired = SessionController.isExpired(session);
         if (session.is_closed) {
-          console.log(`[ATTENDANCE_REJECTED] Session ${session_id} manually closed`);
+          const reason = sessionExpired ? 'Session has expired and is now closed' : 'Session closed';
+          console.log(`[ATTENDANCE_REJECTED] ${reason} for session ${session_id}`);
           return res.status(400).json({
             status: 'error',
-            message: 'Session closed'
+            message: reason
           });
         }
 
         if (now > windowCloseTime) {
-          console.log(`[ATTENDANCE_REJECTED] Attendance window closed for session ${session_id}`);
-          return res.status(400).json({
-            status: 'error',
-            message: 'Attendance window closed'
+          // If the window has passed but the session was not yet marked closed, ensure we persist the closure.
+          SessionController.closeExpiredSessions((err) => {
+            if (err) {
+              console.error('[ATTENDANCE_ERROR] Failed to close expired session:', err);
+            }
+
+            console.log(`[ATTENDANCE_REJECTED] Attendance window closed for session ${session_id}`);
+            return res.status(400).json({
+              status: 'error',
+              message: 'Session has expired and is now closed'
+            });
           });
+          return;
         }
 
         console.log(`[ATTENDANCE_WINDOW_VALID] Window still open for session ${session_id}`);

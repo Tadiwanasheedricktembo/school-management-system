@@ -24,7 +24,10 @@ class QRController {
         return res.status(400).json({ status: 'error', message: 'Invalid session' });
       }
       if (session.is_closed) {
-        return res.status(400).json({ status: 'error', message: 'Session closed' });
+        const reason = SessionController.isExpired(session)
+          ? 'Session has expired and is now closed'
+          : 'Session closed';
+        return res.status(400).json({ status: 'error', message: reason });
       }
 
       TokenService.generateToken(session_id, (err, tokenData) => {
