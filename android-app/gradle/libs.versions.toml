@@ -15,6 +15,8 @@ okhttp = "4.12.0"
 zxing = "4.3.0"
 camerax = "1.4.1"
 playServicesLocation = "21.3.0"
+faceDetection = "16.1.7"
+kotlinxCoroutines = "1.9.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -39,6 +41,8 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "camerax" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+mlkit-face-detection = { group = "com.google.mlkit", name = "face-detection", version.ref = "faceDetection" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

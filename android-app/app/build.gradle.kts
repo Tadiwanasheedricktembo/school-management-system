@@ -75,6 +75,10 @@ dependencies {
     // Location
     implementation(libs.play.services.location)
 
+    // ML Kit Face Detection
+    implementation(libs.mlkit.face.detection)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

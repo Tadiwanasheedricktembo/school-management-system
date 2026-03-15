@@ -23,7 +23,13 @@ app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/qr', qrRoutes);
-app.use('/api/attendance', attendanceRoutes);
+app.use('/api/attendance', (req, res, next) => {
+  // Protect attendance routes except mark (public for students)
+  if (req.method === 'POST' && req.path === '/mark') {
+    return next();
+  }
+  verifyLecturer(req, res, next);
+}, attendanceRoutes);
 app.use('/api/session', (req, res, next) => {
   // Protect session routes except list and health
   if (req.method === 'GET' && (req.path === '/list' || req.path === '/health')) {

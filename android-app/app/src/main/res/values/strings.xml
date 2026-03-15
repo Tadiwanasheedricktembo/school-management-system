@@ -7,4 +7,18 @@
     <string name="scan_qr_prompt">Scan a dynamic attendance QR code</string>
     <string name="enter_roll_number">Enter Roll Number</string>
     <string name="error_empty_roll">Please enter your roll number</string>
+
+    <!-- New Strings -->
+    <string name="btn_selfie">Selfie</string>
+    <string name="btn_location">Location</string>
+    <string name="selfie_preview_desc">Selfie Preview</string>
+    <string name="location_preview_placeholder">Lat: 0.0\nLon: 0.0</string>
+
+    <!-- KYC Selfie Strings -->
+    <string name="selfie_guidance_initial">Align your face inside the frame</string>
+    <string name="selfie_guidance_perfect">Perfect! Hold still.</string>
+    <string name="selfie_guidance_multiple">Only one face allowed</string>
+    <string name="selfie_guidance_facing">Face the camera directly</string>
+    <string name="selfie_guidance_closer">Move closer</string>
+    <string name="btn_confirm">Confirm</string>
 </resources>

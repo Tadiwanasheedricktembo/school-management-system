@@ -1,507 +1,511 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Attendance Records</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Attendance Records | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --info: #0ea5e9;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --sidebar: #1e293b;
+        }
 
-<style>
-body{
-font-family:Arial,sans-serif;
-margin:20px;
-background:#f5f5f5;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-h2{
-color:#333;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
 
-.controls{
-margin-bottom:20px;
-}
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: white;
+            padding: 2rem 1rem;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
 
-button{
-padding:10px 20px;
-margin-right:10px;
-cursor:pointer;
-background:#4CAF50;
-color:white;
-border:none;
-border-radius:4px;
-}
+        .sidebar h2 { font-size: 1.25rem; margin-bottom: 2rem; padding-left: 1rem; color: #818cf8; }
+        
+        .nav-item { 
+            padding: 0.8rem 1rem; 
+            border-radius: 0.5rem; 
+            color: #cbd5e1; 
+            text-decoration: none; 
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
 
-button:hover{
-background:#45a049;
-}
+        .nav-item:hover { background: #334155; color: white; }
+        .nav-item.active { background: var(--primary); color: white; font-weight: 500; }
 
-button.download{
-background:#008CBA;
-}
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem;
+        }
 
-button.export-filtered{
-background:#FF9800;
-}
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+        }
 
-button.export-filtered:hover{
-background:#F57C00;
-}
+        .header-left h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        #sessionLabelDisplay { color: var(--primary); font-size: 1rem; font-weight: 600; }
 
-button:disabled{
-background:#ccc;
-cursor:not-allowed;
-}
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
 
-table{
-width:100%;
-border-collapse:collapse;
-background:white;
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
+        .summary-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
 
-th{
-background:#f9f9f9;
-border:1px solid #ddd;
-padding:12px;
-text-align:left;
-}
+        .summary-card:hover { transform: translateY(-4px); }
+        .summary-card h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.025em; margin-bottom: 0.5rem; }
+        .summary-card .value { font-size: 2rem; font-weight: 700; color: var(--text-main); }
 
-td{
-border:1px solid #ddd;
-padding:12px;
-}
+        /* Controls Area */
+        .controls-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
 
-tr:nth-child(even){
-background:#f9f9f9;
-}
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 200px; }
+        .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 
-.search-container,
-.filter-container{
-margin-bottom:20px;
-}
+        input, select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.6rem;
+            background: #f8fafc;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
 
-input,select{
-padding:10px;
-border:1px solid #ddd;
-border-radius:4px;
-}
+        input:focus, select:focus { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
 
-.summary-cards{
-display:flex;
-gap:20px;
-margin-bottom:20px;
-}
+        .btn-group { display: flex; gap: 0.75rem; }
 
-.summary-card{
-flex:1;
-background:white;
-border:1px solid #ddd;
-border-radius:8px;
-padding:20px;
-text-align:center;
-}
+        button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.6rem;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-.summary-card .value{
-font-size:32px;
-font-weight:bold;
-color:#4CAF50;
-}
+        .btn-refresh { background: var(--primary); color: white; }
+        .btn-refresh:hover { background: var(--primary-hover); }
+        
+        .btn-download { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-download:hover { background: #e2e8f0; }
 
-.no-records,.no-matching-records{
-padding:20px;
-background:white;
-border:1px solid #ddd;
-text-align:center;
-}
+        .btn-export { background: var(--warning); color: white; }
+        .btn-export:hover { filter: brightness(0.9); }
+        .btn-export:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; transform: none; }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.4);
-}
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
 
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
-  text-align: center;
-}
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        
+        th {
+            background: #f1f5f9;
+            padding: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+        td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-</style>
+        /* Inner Table Buttons */
+        td button {
+            padding: 0.4rem 0.8rem;
+            background: #eff6ff;
+            color: var(--info);
+            font-size: 0.75rem;
+            border: 1px solid #dbeafe;
+        }
+        td button:hover { background: #dbeafe; }
 
+        /* Status Badge */
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* Modals & Helpers */
+        .no-records { padding: 3rem; text-align: center; color: var(--text-muted); }
+        
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            z-index: 1000; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white; padding: 1.5rem; border-radius: 1.25rem;
+            max-width: 500px; width: 90%; position: relative;
+        }
+
+        .close {
+            position: absolute; right: 1rem; top: 0.5rem;
+            font-size: 2rem; cursor: pointer; color: var(--text-muted);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .sidebar h2, .nav-item span { display: none; }
+            .main-content { margin-left: 80px; }
+        }
+    </style>
 </head>
-
 <body>
 
-<h2>Attendance Records</h2>
-<div id="sessionLabelDisplay" style="margin-bottom:10px;font-weight:bold;"></div>
-
-<div class="controls">
-<button onclick="loadRecords()">Refresh</button>
-<button class="download" onclick="downloadCSV()">Download CSV</button>
-<button class="export-filtered" id="exportFilteredBtn" onclick="exportFilteredCSV()" disabled>
-Export Filtered CSV
-</button>
-</div>
-
-<div class="search-container">
-<label>Search Roll Number</label>
-<input id="searchInput" onkeyup="filterTable()" placeholder="Type roll number">
-</div>
-
-<div class="filter-container">
-<label>Filter by Session ID</label>
-<select id="sessionFilter" onchange="filterTable()">
-<option value="">All Sessions</option>
-</select>
-</div>
-
-<div class="summary-cards">
-
-<div class="summary-card">
-<h3>Total Attendance Records</h3>
-<p class="value" id="totalRecords">0</p>
-</div>
-
-<div class="summary-card">
-<h3>Filtered Records</h3>
-<p class="value" id="visibleRecords">0</p>
-</div>
-
-<div class="summary-card">
-<h3>Sessions With Attendance</h3>
-<p class="value" id="totalSessions">0</p>
-</div>
-
-<div class="summary-card">
-<h3>Total Sessions Created</h3>
-<p class="value" id="totalSessionsCreated">0</p>
-</div>
-
-</div>
-
-<table id="recordsTable" style="display:none">
-
-<thead>
-<tr>
-<th>Roll Number</th>
-<th>Session ID</th>
-<th>Scan Time</th>
-<th>Status</th>
-<th>Details</th>
-</tr>
-</thead>
-
-<tbody id="recordsBody"></tbody>
-
-</table>
-
-<div id="noRecords" class="no-records" style="display:none">
-No attendance records found
-</div>
-
-<div id="noMatchingRecords" class="no-matching-records" style="display:none">
-No matching attendance records found
-</div>
-
-<div id="selfieModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <img id="selfieImage" src="" alt="Selfie" style="max-width:100%; max-height:400px;">
-  </div>
-</div>
-
-<script>
-
-let sessionLabels = {}; // map session_id -> label
-let allRecords = []; // store all records for export
-
-async function loadRecords(){
-
-console.log('loadRecords called');
-
-const table=document.getElementById("recordsTable")
-const body=document.getElementById("recordsBody")
-const noRecords=document.getElementById("noRecords")
-
-// determine if a session_id query parameter exists
-const urlParams = new URLSearchParams(window.location.search);
-const initialSession = urlParams.get('session_id');
-if(initialSession) console.log('found query session_id=', initialSession);
-
-// fetch sessions to build label map
-let sessionLabels = {};
-try {
-  const sessResp = await fetch('http://localhost:3000/api/session/list');
-  const sessData = await sessResp.json();
-  if (sessData.sessions) {
-    sessData.sessions.forEach(s => {
-      sessionLabels[s.session_id] = s.label || `Session ${s.session_id}`;
-    });
-  }
-} catch (e) {
-  console.warn('could not load session labels', e);
-}
-
-body.innerHTML=""
-table.style.display="none"
-noRecords.style.display="none"
-
-try{
-
-const response=await fetch("http://localhost:3000/api/attendance/records")
-const data=await response.json()
-
-allRecords = data.records; // store for export
-
-if(!data.records || data.records.length===0){
-
-noRecords.style.display="block"
-return
-
-}
-
-data.records.forEach((record,idx)=>{
-  console.log('processing record', idx, record);
-const row=document.createElement("tr")
-
-row.innerHTML=`
-<td>${record.roll_number}</td>
-<td>${record.session_id}</td>
-<td>${new Date(record.scan_time).toLocaleString()}</td>
-<td>${record.status}</td>
-<td>
-  ${record.selfie ? `<button>View Selfie</button>` : 'No Selfie'}
-  ${record.latitude && record.longitude ? `<button onclick="viewLocation(${record.latitude}, ${record.longitude})">View Location</button>` : 'No Location'}
-</td>
-`
-
-body.appendChild(row)
-
-// Attach selfie handler safely
-if (record.selfie) {
-  const selfieBtn = row.querySelector('td button:first-child');
-  selfieBtn.onclick = () => viewSelfie(record.selfie);
-}
-
-})
-console.log('total rows appended:', body.children.length);
-
-table.style.display="table"
-
-populateSessionFilter(data.records)
-
-// after populating filter, apply initialSession if present
-if(initialSession){
-  const filt=document.getElementById('sessionFilter');
-  if(filt.querySelector(`option[value="${initialSession}"]`)){
-    filt.value = initialSession;
-    console.log('applying initial session filter', initialSession);
-    filterTable();
-  } else {
-    console.log('initial session not found in options', initialSession);
-  }
-}
-
-await updateSummaryCards(data.records)
-
-}catch(err){
-
-
-console.error(err)
-alert("Error loading records")
-
-}
-
-}
-
-function downloadCSV(){
-window.open("http://localhost:3000/api/attendance/download","_blank")
-}
-
-function populateSessionFilter(records){
-
-const filter=document.getElementById("sessionFilter")
-
-while(filter.options.length>1){
-filter.remove(1)
-}
-
-const sessions=[...new Set(records.map(r=>r.session_id))]
-
-sessions.sort().forEach(s=>{
-  const option=document.createElement("option")
-  option.value=s
-  const label = sessionLabels[s] || s
-  option.textContent = `${label}`
-  filter.appendChild(option)
-})
-
-}
-
-async function updateSummaryCards(records){
-
-  document.getElementById("totalRecords").textContent=records.length
-
-  const sessions=[...new Set(records.map(r=>r.session_id))]
-
-  document.getElementById("totalSessions").textContent=sessions.length
-  document.getElementById("visibleRecords").textContent=records.length
-
-  const exportBtn=document.getElementById("exportFilteredBtn")
-  exportBtn.disabled=records.length===0
-
-  // fetch total sessions created using session list API
-  try{
-    const resp = await fetch("http://localhost:3000/api/session/list");
-    const data = await resp.json();
-    if(resp.ok && data.sessions){
-      document.getElementById("totalSessionsCreated").textContent = data.sessions.length;
-    } else {
-      console.error('Failed get sessions count', data);
-    }
-  } catch(e){
-    console.error('Error fetching session list', e);
-  }
-}
-
-function updateVisibleRecords(count){
-document.getElementById("visibleRecords").textContent=count
-}
-
-function filterTable(){
-console.log('filterTable called');
-const search=document.getElementById("searchInput").value.toLowerCase()
-const session=document.getElementById("sessionFilter").value
-console.log('search="'+search+'" session="'+session+'"');
-
-// show selected session label
-const labelDiv = document.getElementById('sessionLabelDisplay');
-if(session && sessionLabels[session]){
-  labelDiv.textContent = `Session: ${sessionLabels[session]}`;
-} else {
-  labelDiv.textContent = '';
-}
-
-const rows=document.querySelectorAll("#recordsBody tr")
-
-let visible=0
-
-rows.forEach(row=>{
-
-const roll=row.cells[0].textContent.toLowerCase()
-const sessionId=row.cells[1].textContent
-
-const matchSearch=roll.includes(search)
-const matchSession=session==="" || sessionId===session
-
-if(matchSearch && matchSession){
-
-row.style.display=""
-visible++
-
-}else{
-
-row.style.display="none"
-
-}
-
-})
-
-document.getElementById("noMatchingRecords").style.display =
-visible===0 && rows.length>0 ? "block":"none"
-
-updateVisibleRecords(visible)
-
-document.getElementById("exportFilteredBtn").disabled = visible===0
-
-}
-
-function exportFilteredCSV(){
-
-const rows=document.querySelectorAll("#recordsBody tr")
-const csv=[["roll_number","session_id","scan_time","status","selfie_available"]]
-
-rows.forEach((row, index)=>{
-
-if(row.style.display!=="none"){
-
-const record = allRecords[index];
-const selfieStatus = record.selfie ? "HAS_SELFIE" : "NO_SELFIE";
-
-csv.push([
-row.cells[0].textContent,
-row.cells[1].textContent,
-row.cells[2].textContent,
-row.cells[3].textContent,
-selfieStatus
-])
-
-}
-
-})
-
-const csvContent=csv.map(r=>r.join(",")).join("\n")
-
-const blob=new Blob([csvContent],{type:"text/csv"})
-const url=URL.createObjectURL(blob)
-
-const a=document.createElement("a")
-a.href=url
-a.download="attendance_filtered.csv"
-a.click()
-
-}
-
-function viewSelfie(selfieData) {
-  const modal = document.getElementById('selfieModal');
-  const img = document.getElementById('selfieImage');
-  img.src = `data:image/jpeg;base64,${selfieData}`;
-  modal.style.display = 'block';
-}
-
-function viewLocation(latitude, longitude) {
-  const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
-  window.open(url, '_blank');
-}
-
-// Modal functionality
-const modal = document.getElementById('selfieModal');
-const span = document.getElementsByClassName('close')[0];
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = 'none';
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = 'none';
-  }
-}
-
-document.addEventListener("DOMContentLoaded",loadRecords)
-
-</script>
-
+    <aside class="sidebar">
+        <h2>University Attendance</h2>
+        <nav>
+            <a href="session.html" class="nav-item">
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span>Records History</span>
+            </a>
+            <a href="session.html" class="nav-item">
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header>
+            <div class="header-left">
+                <h1>Attendance Logs</h1>
+                <div id="sessionLabelDisplay"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-refresh" onclick="loadRecords()">Refresh</button>
+                <button class="btn-download" onclick="downloadCSV()">Download Full CSV</button>
+            </div>
+        </header>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3>Total Records</h3>
+                <div class="value" id="totalRecords">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Filtered</h3>
+                <div class="value" id="visibleRecords" style="color: var(--primary)">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Active Sessions</h3>
+                <div class="value" id="totalSessions">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Created</h3>
+                <div class="value" id="totalSessionsCreated">0</div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="input-group">
+                <label>Roll Number Search</label>
+                <input id="searchInput" onkeyup="filterTable()" placeholder="Search roll numbers...">
+            </div>
+            <div class="input-group">
+                <label>Session Filter</label>
+                <select id="sessionFilter" onchange="filterTable()">
+                    <option value="">All Sessions</option>
+                </select>
+            </div>
+            <div class="btn-group" style="align-self: flex-end;">
+                <button class="btn-export" id="exportFilteredBtn" onclick="exportFilteredCSV()" disabled>
+                    Export Filtered
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="recordsTable" style="display:none">
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Session ID</th>
+                        <th>Scan Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+            </table>
+
+            <div id="noRecords" class="no-records" style="display:none">
+                <p>No attendance records found in the database.</p>
+            </div>
+
+            <div id="noMatchingRecords" class="no-records" style="display:none">
+                <p>No records match your current search/filter criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="selfieModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Student Evidence</h3>
+            <img id="selfieImage" src="" alt="Selfie" style="width:100%; height:auto; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        </div>
+    </div>
+
+    <script>
+        // --- AUTH CHECK ---
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'session.html'; // Redirect to login
+                return false;
+            }
+            return true;
+        }
+
+        // --- EXISTING LOGIC STARTS HERE ---
+        let sessionLabels = {}; 
+        let allRecords = []; 
+
+        async function loadRecords(){
+            if (!checkAuth()) return;
+            const table=document.getElementById("recordsTable")
+            const body=document.getElementById("recordsBody")
+            const noRecords=document.getElementById("noRecords")
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialSession = urlParams.get('session_id');
+
+            try {
+                const sessResp = await fetch('http://localhost:3000/api/session/list');
+                const sessData = await sessResp.json();
+                if (sessData.sessions) {
+                    sessData.sessions.forEach(s => {
+                        sessionLabels[s.session_id] = s.label || `Session ${s.session_id}`;
+                    });
+                }
+            } catch (e) { console.warn('Labels error', e); }
+
+            body.innerHTML=""
+            table.style.display="none"
+            noRecords.style.display="none"
+
+            try {
+                const response=await fetch("http://localhost:3000/api/attendance/records")
+                const data=await response.json()
+                allRecords = data.records;
+
+                if(!data.records || data.records.length===0){
+                    noRecords.style.display="block"
+                    return
+                }
+
+                data.records.forEach((record)=>{
+                    const row=document.createElement("tr")
+                    row.innerHTML=`
+                        <td style="font-weight:600">${record.roll_number}</td>
+                        <td><span style="color:var(--text-muted)">#</span>${record.session_id}</td>
+                        <td>${new Date(record.scan_time).toLocaleString()}</td>
+                        <td><span class="status-pill">${record.status}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                ${record.selfie ? `<button class="view-selfie-btn">Selfie</button>` : '<span style="color:#94a3b8; font-size:0.7rem">No Photo</span>'}
+                                ${record.latitude && record.longitude ? `<button onclick="viewLocation(${record.latitude}, ${record.longitude})">Map</button>` : ''}
+                            </div>
+                        </td>
+                    `
+                    body.appendChild(row)
+
+                    if (record.selfie) {
+                        const selfieBtn = row.querySelector('.view-selfie-btn');
+                        selfieBtn.onclick = () => viewSelfie(record.selfie);
+                    }
+                })
+
+                table.style.display="table"
+                populateSessionFilter(data.records)
+
+                if(initialSession){
+                    const filt=document.getElementById('sessionFilter');
+                    if(filt.querySelector(`option[value="${initialSession}"]`)){
+                        filt.value = initialSession;
+                        filterTable();
+                    }
+                }
+                await updateSummaryCards(data.records)
+            } catch(err){
+                console.error(err);
+                alert("Error loading records");
+            }
+        }
+
+        function populateSessionFilter(records){
+            const filter=document.getElementById("sessionFilter")
+            while(filter.options.length>1) filter.remove(1)
+            const sessions=[...new Set(records.map(r=>r.session_id))]
+            sessions.sort().forEach(s=>{
+                const option=document.createElement("option")
+                option.value=s
+                option.textContent = sessionLabels[s] || `Session ${s}`
+                filter.appendChild(option)
+            })
+        }
+
+        async function updateSummaryCards(records){
+            document.getElementById("totalRecords").textContent=records.length
+            const sessions=[...new Set(records.map(r=>r.session_id))]
+            document.getElementById("totalSessions").textContent=sessions.length
+            document.getElementById("visibleRecords").textContent=records.length
+            document.getElementById("exportFilteredBtn").disabled=records.length===0
+
+            try{
+                const resp = await fetch("http://localhost:3000/api/session/list");
+                const data = await resp.json();
+                if(resp.ok && data.sessions) document.getElementById("totalSessionsCreated").textContent = data.sessions.length;
+            } catch(e){ console.error(e); }
+        }
+
+        function filterTable(){
+            const search=document.getElementById("searchInput").value.toLowerCase()
+            const session=document.getElementById("sessionFilter").value
+            const labelDiv = document.getElementById('sessionLabelDisplay');
+            labelDiv.textContent = (session && sessionLabels[session]) ? `Viewing: ${sessionLabels[session]}` : '';
+
+            const rows=document.querySelectorAll("#recordsBody tr")
+            let visible=0
+            rows.forEach(row=>{
+                const roll=row.cells[0].textContent.toLowerCase()
+                const sessionId=row.cells[1].textContent.replace('#','') // Handle the '#' added in UI
+                const matchSearch=roll.includes(search)
+                const matchSession=session==="" || sessionId===session
+                if(matchSearch && matchSession){
+                    row.style.display=""
+                    visible++
+                } else {
+                    row.style.display="none"
+                }
+            })
+            document.getElementById("noMatchingRecords").style.display = visible===0 && rows.length>0 ? "block" : "none"
+            document.getElementById("visibleRecords").textContent=visible
+            document.getElementById("exportFilteredBtn").disabled = visible===0
+        }
+
+        function viewSelfie(selfieData) {
+            const modal = document.getElementById('selfieModal');
+            const img = document.getElementById('selfieImage');
+            img.src = `data:image/jpeg;base64,${selfieData}`;
+            modal.style.display = 'flex';
+        }
+
+        function viewLocation(latitude, longitude) {
+            const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            window.open(url, '_blank');
+        }
+
+        // --- EXPORT & MODAL UI LOGIC ---
+        const modal = document.getElementById('selfieModal');
+        const span = document.getElementsByClassName('close')[0];
+        span.onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; }
+
+        function downloadCSV(){ window.open("http://localhost:3000/api/attendance/download","_blank") }
+
+        function exportFilteredCSV(){
+            const rows=document.querySelectorAll("#recordsBody tr")
+            const csv=[["roll_number","session_id","scan_time","status","selfie_available"]]
+            rows.forEach((row, index)=>{
+                if(row.style.display!=="none"){
+                    const record = allRecords[index];
+                    csv.push([
+                        row.cells[0].textContent,
+                        row.cells[1].textContent.replace('#',''),
+                        row.cells[2].textContent,
+                        row.cells[3].textContent,
+                        record.selfie ? "HAS_SELFIE" : "NO_SELFIE"
+                    ])
+                }
+            })
+            const csvContent=csv.map(r=>r.join(",")).join("\n")
+            const blob=new Blob([csvContent],{type:"text/csv"})
+            const url=URL.createObjectURL(blob)
+            const a=document.createElement("a"); a.href=url; a.download="attendance_filtered.csv"; a.click();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (checkAuth()) {
+                loadRecords();
+            }
+        });
+    </script>
 </body>
 </html>

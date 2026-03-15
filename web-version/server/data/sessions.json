@@ -502,5 +502,93 @@
     "lecturer_name": "",
     "note": "",
     "label": "Session 55"
+  },
+  {
+    "session_id": 56,
+    "created_at": "2026-03-15T06:28:09.268Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "J",
+    "class_name": "HJ",
+    "lecturer_name": "HJ",
+    "note": "HJ",
+    "label": "J - HJ"
+  },
+  {
+    "session_id": 57,
+    "created_at": "2026-03-15T06:29:11.001Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 57"
+  },
+  {
+    "session_id": 58,
+    "created_at": "2026-03-15T06:39:41.689Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 58"
+  },
+  {
+    "session_id": 59,
+    "created_at": "2026-03-15T06:55:12.793Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 59"
+  },
+  {
+    "session_id": 60,
+    "created_at": "2026-03-15T11:25:20.909Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "Bsc IT",
+    "class_name": "CT 16",
+    "lecturer_name": "MR Tembo",
+    "note": "",
+    "label": "Bsc IT - CT 16"
+  },
+  {
+    "session_id": 61,
+    "created_at": "2026-03-15T11:37:24.432Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 61"
+  },
+  {
+    "session_id": 62,
+    "created_at": "2026-03-15T12:11:38.667Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 62"
+  },
+  {
+    "session_id": 63,
+    "created_at": "2026-03-15T12:31:59.378Z",
+    "attendance_window_minutes": 10,
+    "is_closed": false,
+    "course_name": "",
+    "class_name": "",
+    "lecturer_name": "",
+    "note": "",
+    "label": "Session 63"
   }
 ]
