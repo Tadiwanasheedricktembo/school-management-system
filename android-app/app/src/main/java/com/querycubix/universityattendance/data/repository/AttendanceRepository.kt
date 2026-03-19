@@ -7,6 +7,7 @@ import retrofit2.Response
 
 class AttendanceRepository(private val apiService: AttendanceApiService) {
     suspend fun markAttendance(
+        studentName: String,
         rollNumber: String,
         token: String,
         deviceId: String,
@@ -14,9 +15,9 @@ class AttendanceRepository(private val apiService: AttendanceApiService) {
         longitude: Double? = null,
         selfie: String? = null
     ): Response<AttendanceResponse> {
-        // FIX: Ensure constructor parameters match the data class field names (snake_case)
         return apiService.markAttendance(
             AttendanceRequest(
+                student_name = studentName,
                 roll_number = rollNumber,
                 token = token,
                 device_id = deviceId,

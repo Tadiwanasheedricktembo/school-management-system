@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const os = require('os');
 
 // Import database configuration
 require('./config/database');
@@ -14,12 +15,25 @@ const { router: authRoutes, verifyLecturer } = require('./controllers/authContro
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// If HOST is omitted, Node binds to all interfaces. Explicit 0.0.0.0 makes this unambiguous.
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Middleware
 app.use(cors());
 // increase payload limits to allow selfie data (~5mb)
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Minimal request logging (helps confirm whether requests reach the server at all)
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    // eslint-disable-next-line no-console
+    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`);
+  });
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -66,9 +80,28 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+const server = app.listen(PORT, HOST, () => {
+  const addr = server.address();
+  const bind =
+    typeof addr === 'string'
+      ? addr
+      : addr
+        ? `${addr.address}:${addr.port}`
+        : `${HOST}:${PORT}`;
+
+  console.log(`Server is running at http://${bind}`);
+  console.log(`Health check: http://${bind}/api/health`);
+
+  const ifaces = os.networkInterfaces();
+  const ipv4 = Object.entries(ifaces).flatMap(([name, infos]) =>
+    (infos || [])
+      .filter((i) => i && i.family === 'IPv4' && !i.internal)
+      .map((i) => `${name}: ${i.address}`)
+  );
+  if (ipv4.length) {
+    console.log('LAN IPv4 addresses:');
+    ipv4.forEach((s) => console.log(`- ${s}`));
+  }
 
   // Periodically close any sessions that have reached their expiry time
   SessionController.startExpiryWatcher();

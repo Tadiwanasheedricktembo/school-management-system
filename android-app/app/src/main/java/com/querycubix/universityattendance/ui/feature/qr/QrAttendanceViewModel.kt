@@ -32,6 +32,7 @@ class QrAttendanceViewModel(
     var capturedSelfieBase64: String? = null
 
     fun markAttendance(
+        studentName: String,
         rollNumber: String,
         token: String,
         deviceId: String,
@@ -40,28 +41,19 @@ class QrAttendanceViewModel(
         selfie: String?
     ) {
         viewModelScope.launch {
-            // Building the request object to log exactly what's being sent
-            val request = AttendanceRequest(
-                roll_number = rollNumber,
-                token = token,
-                device_id = deviceId,
-                latitude = latitude,
-                longitude = longitude,
-                selfie = selfie
-            )
-
             Log.d("ATTENDANCE_LOG", "--- PRE-SUBMISSION DEBUG ---")
+            Log.d("ATTENDANCE_LOG", "Name: $studentName")
             Log.d("ATTENDANCE_LOG", "Roll: $rollNumber")
             Log.d("ATTENDANCE_LOG", "Token: $token")
             Log.d("ATTENDANCE_LOG", "Device ID: $deviceId")
             Log.d("ATTENDANCE_LOG", "Latitude: ${latitude ?: "NULL"}")
             Log.d("ATTENDANCE_LOG", "Longitude: ${longitude ?: "NULL"}")
             Log.d("ATTENDANCE_LOG", "Selfie (Base64 length): ${selfie?.length ?: 0}")
-            Log.d("ATTENDANCE_LOG", "FULL JSON PAYLOAD: ${Gson().toJson(request)}")
             
             _uiState.value = QrAttendanceState.Loading
             try {
                 val response = repository.markAttendance(
+                    studentName = studentName,
                     rollNumber = rollNumber,
                     token = token,
                     deviceId = deviceId,

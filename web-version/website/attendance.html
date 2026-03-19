@@ -296,6 +296,7 @@
                 <thead>
                     <tr>
                         <th>Roll Number</th>
+                        <th>Student Name</th>
                         <th>Session ID</th>
                         <th>Scan Time</th>
                         <th>Status</th>
@@ -389,8 +390,10 @@
 
                 records.forEach((record)=>{
                     const row=document.createElement("tr");
+                    const studentName = (record.student_name || record.studentName || '').trim();
                     row.innerHTML=`
                         <td style="font-weight:600">${record.roll_number || '-'}</td>
+                        <td>${studentName || '-'}</td>
                         <td><span style="color:var(--text-muted)">#</span>${record.session_id}</td>
                         <td>${record.scan_time ? new Date(record.scan_time).toLocaleString() : '-'}</td>
                         <td><span class="status-pill">${record.status || 'present'}</span></td>
@@ -463,7 +466,7 @@
             let visible=0
             rows.forEach(row=>{
                 const roll=row.cells[0].textContent.toLowerCase()
-                const sessionId=row.cells[1].textContent.replace('#','') // Handle the '#' added in UI
+                const sessionId=row.cells[2].textContent.replace('#','') // Handle the '#' added in UI
                 const matchSearch=roll.includes(search)
                 const matchSession=session==="" || sessionId===session
                 if(matchSearch && matchSession){
@@ -500,15 +503,16 @@
 
         function exportFilteredCSV(){
             const rows=document.querySelectorAll("#recordsBody tr")
-            const csv=[["roll_number","session_id","scan_time","status","selfie_available"]]
+            const csv=[["roll_number","student_name","session_id","scan_time","status","selfie_available"]]
             rows.forEach((row, index)=>{
                 if(row.style.display!=="none"){
                     const record = allRecords[index];
                     csv.push([
                         row.cells[0].textContent,
-                        row.cells[1].textContent.replace('#',''),
-                        row.cells[2].textContent,
+                        row.cells[1].textContent,
+                        row.cells[2].textContent.replace('#',''),
                         row.cells[3].textContent,
+                        row.cells[4].textContent,
                         record.selfie ? "HAS_SELFIE" : "NO_SELFIE"
                     ])
                 }

@@ -14,14 +14,22 @@ class FaceOverlayView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private val backgroundPaint = Paint().apply {
-        color = Color.parseColor("#99000000") // Semi-transparent black
+        color = Color.parseColor("#B3111827") // Higher opacity for focus
         style = Paint.Style.FILL
     }
 
     private val borderPaint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
-        strokeWidth = 8f
+        strokeWidth = 12f // Tighter, cleaner stroke
+        isAntiAlias = true
+        setShadowLayer(20f, 0f, 0f, Color.WHITE)
+    }
+
+    private val gridPaint = Paint().apply {
+        color = Color.parseColor("#30FFFFFF")
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
         isAntiAlias = true
     }
 
@@ -39,14 +47,20 @@ class FaceOverlayView @JvmOverloads constructor(
         VALID
     }
 
+    init {
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
+    }
+
     fun setFaceState(state: FaceState) {
         if (faceState != state) {
             faceState = state
-            borderPaint.color = when (state) {
-                FaceState.VALID -> Color.GREEN
-                FaceState.INVALID -> Color.RED
+            val colorRes = when (state) {
+                FaceState.VALID -> Color.parseColor("#3B82F6") // Professional Blue
+                FaceState.INVALID -> Color.parseColor("#EF4444") // Red for guidance
                 FaceState.NO_FACE -> Color.WHITE
             }
+            borderPaint.color = colorRes
+            borderPaint.setShadowLayer(20f, 0f, 0f, colorRes)
             invalidate()
         }
     }
@@ -54,13 +68,14 @@ class FaceOverlayView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // 1. Draw the dimmed background over the entire view
         val layerId = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
+        
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), backgroundPaint)
 
-        // 2. Define the face oval (centered, roughly 70% width)
-        val horizontalMargin = width * 0.15f
-        val verticalMargin = height * 0.25f
+        // TIGHTER OVAL: 55% width, 40% height. Centered.
+        // This forces the user to bring the camera very close to the face.
+        val horizontalMargin = width * 0.225f 
+        val verticalMargin = height * 0.30f
         ovalRect.set(
             horizontalMargin,
             verticalMargin,
@@ -68,12 +83,27 @@ class FaceOverlayView @JvmOverloads constructor(
             height - verticalMargin
         )
 
-        // 3. "Punch a hole" through the background
         canvas.drawOval(ovalRect, eraserPaint)
         
-        // 4. Draw the border around the hole
+        // Draw alignment grid inside the tight oval
+        drawBiometricGrid(canvas, ovalRect)
+
         canvas.drawOval(ovalRect, borderPaint)
 
         canvas.restoreToCount(layerId)
+    }
+
+    private fun drawBiometricGrid(canvas: Canvas, rect: RectF) {
+        val centerX = rect.centerX()
+        val centerY = rect.centerY()
+        val w = rect.width()
+        val h = rect.height()
+        
+        // Eye-line guide
+        canvas.drawLine(centerX - w*0.3f, centerY - h*0.15f, centerX + w*0.3f, centerY - h*0.15f, gridPaint)
+        // Nose-line guide
+        canvas.drawLine(centerX, centerY - h*0.2f, centerX, centerY + h*0.2f, gridPaint)
+        // Chin-line guide
+        canvas.drawLine(centerX - w*0.2f, centerY + h*0.25f, centerX + w*0.2f, centerY + h*0.25f, gridPaint)
     }
 }

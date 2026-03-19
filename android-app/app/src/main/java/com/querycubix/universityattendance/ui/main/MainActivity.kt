@@ -36,6 +36,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.querycubix.universityattendance.R
 import com.querycubix.universityattendance.UniversityApplication
 import com.querycubix.universityattendance.data.remote.AttendanceApiService
+import com.querycubix.universityattendance.data.remote.NetworkConfig
 import com.querycubix.universityattendance.data.repository.AttendanceRepository
 import com.querycubix.universityattendance.databinding.ActivityMainBinding
 import com.querycubix.universityattendance.ui.feature.qr.QrAttendanceState
@@ -51,6 +52,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.ByteArrayOutputStream
+import java.util.Locale
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
@@ -65,12 +67,14 @@ class MainActivity : AppCompatActivity() {
     private val qrScannerLauncher: ActivityResultLauncher<ScanOptions> =
         registerForActivityResult(ScanContract()) { result ->
             val token = result.contents
+            val studentName = binding.etStudentName.text.toString().trim()
             val rollNumber = binding.etRollNumber.text.toString().trim()
             val deviceId = getUniqueDeviceId()
             
             if (token != null) {
                 app.session.lastRollNumber = rollNumber
                 viewModel.markAttendance(
+                    studentName = studentName,
                     rollNumber = rollNumber,
                     token = token,
                     deviceId = deviceId,
@@ -107,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                 if (base64 != null) {
                     viewModel.capturedSelfieBase64 = base64
                     updateReadinessUI()
-                    Toast.makeText(this@MainActivity, "Selfie accepted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Selfie processed successfully", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 viewModel.capturedSelfieBase64 = null
@@ -138,12 +142,9 @@ class MainActivity : AppCompatActivity() {
 
             val face = faces[0]
             
-            // 1. Check if roughly facing forward (Euler Angles)
-            // Y is looking left/right. X is looking up/down.
             if (abs(face.headEulerAngleY) > 15) return "Look directly at the camera (too much turn)."
             if (abs(face.headEulerAngleX) > 15) return "Look directly at the camera (too much tilt)."
 
-            // 2. Check if face is large enough in the frame (e.g., at least 20% of image width)
             val faceWidth = face.boundingBox.width()
             val imageWidth = image.width
             val sizeRatio = faceWidth.toFloat() / imageWidth.toFloat()
@@ -189,11 +190,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUI() {
         binding.etRollNumber.setText(app.session.lastRollNumber)
-        binding.etRollNumber.addTextChangedListener(object : TextWatcher {
+        
+        val commonTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { updateReadinessUI() }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { 
+                binding.tilRollNumber.error = null
+                binding.tilStudentName.error = null
+                updateReadinessUI() 
+            }
             override fun afterTextChanged(s: Editable?) {}
-        })
+        }
+
+        binding.etStudentName.addTextChangedListener(commonTextWatcher)
+        binding.etRollNumber.addTextChangedListener(commonTextWatcher)
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -202,42 +211,59 @@ class MainActivity : AppCompatActivity() {
                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    private fun validatePreScanRequirements(): Boolean {
-        val rollNumber = binding.etRollNumber.text.toString().trim()
-        if (rollNumber.isEmpty()) {
-            binding.tilRollNumber.error = "Enter roll number"
-            return false
-        }
-        if (!isLocationEnabled()) {
-            Toast.makeText(this, "Turn on location services", Toast.LENGTH_LONG).show()
-            viewModel.capturedLatitude = null
-            viewModel.capturedLongitude = null
-            binding.cvLocationInfo.visibility = View.GONE
-            updateReadinessUI()
-            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-            return false
-        }
-        if (viewModel.capturedLatitude == null) {
-            fetchLocation()
-            return false
-        }
-        if (viewModel.capturedSelfieBase64 == null) {
-            Toast.makeText(this, "Take a valid selfie first", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        return true
-    }
-
     private fun updateReadinessUI() {
+        val hasName = binding.etStudentName.text.toString().trim().isNotEmpty()
         val hasRoll = binding.etRollNumber.text.toString().trim().isNotEmpty()
         val hasLocation = viewModel.capturedLatitude != null && isLocationEnabled()
         val hasSelfie = viewModel.capturedSelfieBase64 != null
-        val status = StringBuilder()
-        status.append(if (hasRoll) "✅ Roll " else "❌ Roll ")
-        status.append(if (hasLocation) "| ✅ Location " else "| ❌ Location ")
-        status.append(if (hasSelfie) "| ✅ Selfie" else "| ❌ Selfie")
-        binding.tvStatus.text = status.toString()
-        binding.btnScanQr.alpha = if (hasRoll && hasLocation && hasSelfie) 1.0f else 0.6f
+
+        // Selfie Status
+        if (hasSelfie) {
+            binding.tvSelfieStatus.text = "Captured"
+            binding.tvSelfieStatus.setTextColor(getColor(R.color.success))
+            binding.tvSelfieStatus.setBackgroundResource(android.R.drawable.editbox_background)
+            binding.tvSelfieStatus.backgroundTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.success_light))
+        } else {
+            binding.tvSelfieStatus.text = "Required"
+            binding.tvSelfieStatus.setTextColor(getColor(R.color.text_secondary))
+            binding.tvSelfieStatus.setBackgroundResource(android.R.drawable.editbox_background)
+            binding.tvSelfieStatus.backgroundTintList = null
+        }
+
+        // Location Status
+        if (hasLocation) {
+            binding.tvLocationStatus.text = "Available"
+            binding.tvLocationStatus.setTextColor(getColor(R.color.success))
+            binding.tvLocationStatus.setBackgroundResource(android.R.drawable.editbox_background)
+            binding.tvLocationStatus.backgroundTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.success_light))
+            binding.layoutLocationInfo.visibility = View.VISIBLE
+        } else {
+            binding.tvLocationStatus.text = "Required"
+            binding.tvLocationStatus.setTextColor(getColor(R.color.text_secondary))
+            binding.tvLocationStatus.setBackgroundResource(android.R.drawable.editbox_background)
+            binding.tvLocationStatus.backgroundTintList = null
+            binding.layoutLocationInfo.visibility = View.GONE
+        }
+
+        // Action Readiness
+        val isReady = hasName && hasRoll && hasLocation && hasSelfie
+        binding.btnScanQr.isEnabled = isReady
+        binding.btnScanQr.alpha = if (isReady) 1.0f else 0.6f
+        
+        if (isReady) {
+            binding.tvStatus.text = "READY TO SCAN"
+            binding.tvStatus.setTextColor(getColor(R.color.success))
+        } else {
+            val statusText = when {
+                !hasName -> "Enter student name"
+                !hasRoll -> "Enter roll number"
+                !hasSelfie -> "Selfie required"
+                !hasLocation -> "Location required"
+                else -> "Verification pending"
+            }
+            binding.tvStatus.text = statusText.uppercase()
+            binding.tvStatus.setTextColor(getColor(R.color.text_secondary))
+        }
     }
 
     private fun setupListeners() {
@@ -245,14 +271,13 @@ class MainActivity : AppCompatActivity() {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastScanClickTime < 1000) return@setOnClickListener
             lastScanClickTime = currentTime
-            if (validatePreScanRequirements()) {
-                qrScannerLauncher.launch(ScanOptions().apply {
-                    setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                    setPrompt("Align QR code to mark attendance")
-                    setBeepEnabled(true)
-                    setOrientationLocked(false)
-                })
-            }
+            
+            qrScannerLauncher.launch(ScanOptions().apply {
+                setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                setPrompt("Align QR code to mark attendance")
+                setBeepEnabled(true)
+                setOrientationLocked(false)
+            })
         }
         binding.btnTakeSelfie.setOnClickListener { selfieLauncher.launch(Intent(this, SelfieActivity::class.java)) }
         binding.btnGetLocation.setOnClickListener { checkLocationPermissions() }
@@ -260,14 +285,19 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun fetchLocation() {
-        if (!isLocationEnabled()) return
+        if (!isLocationEnabled()) {
+            Toast.makeText(this, "Please enable location services", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            return
+        }
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 viewModel.capturedLatitude = location.latitude
                 viewModel.capturedLongitude = location.longitude
-                binding.cvLocationInfo.visibility = View.VISIBLE
-                binding.tvLocationPreview.text = "Lat: ${location.latitude}\nLon: ${location.longitude}"
+                binding.tvLocationPreview.text = "Location Available"
                 updateReadinessUI()
+            } else {
+                Toast.makeText(this, "Location identification failed. Try again.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -281,12 +311,19 @@ class MainActivity : AppCompatActivity() {
                         is QrAttendanceState.Loading -> setLoading(true)
                         is QrAttendanceState.Success -> {
                             setLoading(false)
-                            binding.tvStatus.text = "✅ ${state.message}"
+                            binding.tvStatus.text = "ATTENDANCE SUBMITTED"
+                            binding.tvStatus.setTextColor(getColor(R.color.success))
                             viewModel.resetState()
                             binding.cvSelfiePreview.visibility = View.GONE
-                            binding.cvLocationInfo.visibility = View.GONE
+                            viewModel.capturedSelfieBase64 = null
+                            updateReadinessUI()
                         }
-                        is QrAttendanceState.Error -> { setLoading(false); binding.tvStatus.text = "❌ ${state.message}" }
+                        is QrAttendanceState.Error -> { 
+                            setLoading(false)
+                            binding.tvStatus.text = "SUBMISSION FAILED"
+                            binding.tvStatus.setTextColor(getColor(R.color.error))
+                            Toast.makeText(this@MainActivity, state.message, Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
@@ -303,17 +340,24 @@ class MainActivity : AppCompatActivity() {
     private fun setLoading(isLoading: Boolean) {
         binding.btnScanQr.isEnabled = !isLoading
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        if (isLoading) {
+            binding.tvStatus.text = "PROCESSING..."
+            binding.tvStatus.setTextColor(getColor(R.color.primary))
+        }
     }
 
     private fun setupViewModel() {
-        val client = OkHttpClient.Builder().build()
+        val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+        val client = OkHttpClient.Builder().addInterceptor(logging).build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.65.237:3000/api/")
+            .baseUrl(NetworkConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val apiService = retrofit.create(AttendanceApiService::class.java)
-        viewModel = ViewModelProvider(this, QrAttendanceViewModelFactory(AttendanceRepository(apiService)))[QrAttendanceViewModel::class.java]
+        val repository = AttendanceRepository(apiService)
+        val factory = QrAttendanceViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, factory)[QrAttendanceViewModel::class.java]
     }
 
     @SuppressLint("HardwareIds")

@@ -684,6 +684,7 @@
                 const badgeBg = record.status === 'verified' ? '#dcfce7' : '#fef3c7';
                 const badgeColor = record.status === 'verified' ? '#0f766e' : '#854d0e';
                 const selfie = record.selfie ? `<img src="data:image/jpeg;base64,${record.selfie}" class="selfie-thumb" alt="Selfie"/>` : '<span style="color: var(--text-muted);">No selfie</span>';
+                const studentName = (record.student_name || record.studentName || '').trim();
 
                 const key = `${record.roll_number || ''}|${record.scan_time || ''}`;
                 const isNew = !seenAttendanceKeys.has(key);
@@ -692,7 +693,7 @@
                 return `
                     <tr class="${isNew ? 'new-attendance' : ''}">
                         <td>${record.roll_number || '-'}</td>
-                        <td>${record.roll_number || '-'}</td>
+                        <td>${studentName || '-'}</td>
                         <td><span class="${badgeClass}" style="background:${badgeBg}; color:${badgeColor};">${status}</span></td>
                         <td>${timestamp}</td>
                         <td>${selfie}</td>

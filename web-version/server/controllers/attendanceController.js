@@ -7,6 +7,21 @@ const ATTENDANCE_FILE = path.join(__dirname, '..', 'data', 'attendance_records.c
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
 class AttendanceController {
+  static csvSafe(value) {
+    if (value === null || value === undefined) return '';
+    // This backend uses a simple comma-split CSV parser. Keep it stable by stripping commas/newlines.
+    return String(value).replace(/[\r\n]+/g, ' ').replace(/,/g, ' ').trim();
+  }
+
+  static getHeaderIndexes(headerLine) {
+    const headers = (headerLine || '').trim().split(',');
+    const idx = {};
+    headers.forEach((h, i) => {
+      idx[h] = i;
+    });
+    return { headers, idx };
+  }
+
   // Ensure data directory and CSV file exist
   static ensureDataFile() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -19,7 +34,7 @@ class AttendanceController {
       // include all possible columns up front
       fs.writeFileSync(
         ATTENDANCE_FILE,
-        'roll_number,session_id,token,scan_time,status,device_id,latitude,longitude,selfie\n',
+        'roll_number,student_name,session_id,token,scan_time,status,device_id,latitude,longitude,selfie\n',
         'utf8'
       );
     } else {
@@ -27,9 +42,9 @@ class AttendanceController {
       const content = fs.readFileSync(ATTENDANCE_FILE, 'utf8');
       const lines = content.split('\n');
       const header = lines[0];
-      const required = ['device_id', 'latitude', 'longitude', 'selfie'];
+      const required = ['student_name', 'device_id', 'latitude', 'longitude', 'selfie'];
       const headers = header.split(',');
-      const missing = required.filter(col => !headers.includes(col));
+      const missing = required.filter((col) => !headers.includes(col));
       if (missing.length > 0) {
         console.log(`[CSV_UPDATE] Adding missing columns: ${missing.join(', ')}`);
         const newHeader = headers.concat(missing).join(',');
@@ -57,10 +72,16 @@ class AttendanceController {
         return callback(err);
       }
 
-      const lines = data.split('\n').slice(1); // Skip header
+      const allLines = data.split('\n');
+      const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
+      const rollIdx = idx.roll_number ?? 0;
+      const sessionIdx = idx.session_id ?? 1;
+      const lines = allLines.slice(1); // Skip header
       const isDuplicate = lines.some(line => {
         if (!line.trim()) return false;
-        const [roll, session] = line.split(',');
+        const parts = line.split(',');
+        const roll = parts[rollIdx] ?? '';
+        const session = parts[sessionIdx] ?? '';
         return roll === roll_number && session === session_id.toString();
       });
 
@@ -83,13 +104,16 @@ class AttendanceController {
         return callback(err);
       }
 
-      const lines = data.split('\n').slice(1); // Skip header
+      const allLines = data.split('\n');
+      const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
+      const sessionIdx = idx.session_id ?? 1;
+      const deviceIdx = idx.device_id ?? 5;
+      const lines = allLines.slice(1); // Skip header
       const isDuplicate = lines.some(line => {
         if (!line.trim()) return false;
         const parts = line.split(',');
-        // device_id is the 6th column (index 5)
-        const session = parts[1];
-        const device = parts[5];
+        const session = parts[sessionIdx] ?? '';
+        const device = parts[deviceIdx] ?? '';
         return device === device_id && session === session_id.toString();
       });
 
@@ -98,24 +122,30 @@ class AttendanceController {
   }
 
   // Append attendance record to CSV
-  static appendToCSV(roll_number, session_id, token, device_id, latitude, longitude, selfie, callback) {
+  static appendToCSV(roll_number, student_name, session_id, token, device_id, latitude, longitude, selfie, callback) {
     const scanTime = new Date().toISOString();
     const status = 'present';
     // ensure values are strings and fallback to empty
-    const dev = device_id || '';
-    const lat = latitude || '';
-    const lon = longitude || '';
-    const sf = selfie || '';
-    const csvLine = `${roll_number},${session_id},${token},${scanTime},${status},${dev},${lat},${lon},${sf}\n`;
+    const roll = AttendanceController.csvSafe(roll_number);
+    const name = AttendanceController.csvSafe(student_name);
+    const sess = AttendanceController.csvSafe(session_id);
+    const tok = AttendanceController.csvSafe(token);
+    const dev = AttendanceController.csvSafe(device_id);
+    const lat = AttendanceController.csvSafe(latitude);
+    const lon = AttendanceController.csvSafe(longitude);
+    const sf = AttendanceController.csvSafe(selfie);
+
+    const csvLine = `${roll},${name},${sess},${tok},${scanTime},${status},${dev},${lat},${lon},${sf}\n`;
 
     fs.appendFile(ATTENDANCE_FILE, csvLine, 'utf8', (err) => {
       if (err) {
         return callback(err);
       }
       callback(null, {
-        roll_number,
-        session_id,
-        token,
+        roll_number: roll,
+        student_name: name,
+        session_id: sess,
+        token: tok,
         scanTime,
         status,
         device_id: dev,
@@ -136,6 +166,10 @@ class AttendanceController {
       rawBody.student_id ||
       rawBody.studentId ||
       rawBody.rollNumber ||
+      null;
+    const student_name =
+      rawBody.student_name ||
+      rawBody.studentName ||
       null;
     const token =
       rawBody.token ||
@@ -167,7 +201,7 @@ class AttendanceController {
         `Latitude: ${latitude}, Longitude: ${longitude}, Selfie: ${selfieValue ? '[provided]' : '[none]'} `
     );
 
-    // only roll_number and token remain required
+    // required identity fields: roll_number is required; student_name is optional for backward compatibility
     if (!roll_number || !token) {
       console.warn(
         '[ATTENDANCE_VALIDATION] Missing required fields. ' +
@@ -178,6 +212,15 @@ class AttendanceController {
         status: 'error',
         message: 'Roll number and token are required'
       });
+    }
+
+    if (student_name !== null && student_name !== undefined) {
+      if (typeof student_name !== 'string' || !student_name.trim()) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'studentName must be a non-empty string when provided'
+        });
+      }
     }
 
     if (latitude && longitude) {
@@ -312,6 +355,7 @@ class AttendanceController {
             // Step 4: Append to CSV file (include optional extras)
             AttendanceController.appendToCSV(
               roll_number,
+              student_name,
               session_id,
               token,
               device_id,
@@ -370,21 +414,24 @@ class AttendanceController {
         });
       }
 
-      const lines = data.split('\n').slice(1); // Skip header
+      const allLines = data.split('\n');
+      const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
+      const lines = allLines.slice(1); // Skip header
       const records = lines
         .filter(line => line.trim())
         .map(line => {
           const parts = line.split(',');
-          const roll_number = parts[0];
-          const sess_id = parts[1];
-          const token = parts[2];
-          const scan_time = parts[3];
-          const status = parts[4];
-          const device_id = parts[5] || '';
-          const latitude = parts[6] || '';
-          const longitude = parts[7] || '';
-          const selfie = parts[8] || '';
-          return { roll_number, session_id: sess_id, token, scan_time, status, device_id, latitude, longitude, selfie };
+          const roll_number = parts[idx.roll_number ?? 0] || '';
+          const student_name = parts[idx.student_name ?? 1] || '';
+          const sess_id = parts[idx.session_id ?? 2] || '';
+          const token = parts[idx.token ?? 3] || '';
+          const scan_time = parts[idx.scan_time ?? 4] || '';
+          const status = parts[idx.status ?? 5] || '';
+          const device_id = parts[idx.device_id ?? 6] || '';
+          const latitude = parts[idx.latitude ?? 7] || '';
+          const longitude = parts[idx.longitude ?? 8] || '';
+          const selfie = parts[idx.selfie ?? 9] || '';
+          return { roll_number, student_name, session_id: sess_id, token, scan_time, status, device_id, latitude, longitude, selfie };
         })
         .filter(record => record.session_id === session_id);
 
@@ -420,21 +467,24 @@ class AttendanceController {
         });
       }
 
-      const lines = data.split('\n').slice(1); // Skip header
+      const allLines = data.split('\n');
+      const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
+      const lines = allLines.slice(1); // Skip header
       const records = lines
         .filter(line => line.trim())
         .map(line => {
           const parts = line.split(',');
-          const roll_number = parts[0];
-          const session_id = parseInt(parts[1]);
-          const token = parts[2];
-          const scan_time = parts[3];
-          const status = parts[4];
-          const device_id = parts[5] || '';
-          const latitude = parts[6] || '';
-          const longitude = parts[7] || '';
-          const selfie = parts[8] || '';
-          return { roll_number, session_id, token, scan_time, status, device_id, latitude, longitude, selfie };
+          const roll_number = parts[idx.roll_number ?? 0] || '';
+          const student_name = parts[idx.student_name ?? 1] || '';
+          const session_id = parseInt(parts[idx.session_id ?? 2]);
+          const token = parts[idx.token ?? 3] || '';
+          const scan_time = parts[idx.scan_time ?? 4] || '';
+          const status = parts[idx.status ?? 5] || '';
+          const device_id = parts[idx.device_id ?? 6] || '';
+          const latitude = parts[idx.latitude ?? 7] || '';
+          const longitude = parts[idx.longitude ?? 8] || '';
+          const selfie = parts[idx.selfie ?? 9] || '';
+          return { roll_number, student_name, session_id, token, scan_time, status, device_id, latitude, longitude, selfie };
         });
 
       console.log(`[RECORDS_SUCCESS] Total records returned: ${records.length}`);
@@ -473,17 +523,19 @@ class AttendanceController {
 
         const lines = data.split('\n');
         if (lines.length > 0) {
-          // Modify header
-          lines[0] = lines[0].replace(/selfie$/, 'selfie_available');
+          const headerCols = lines[0].split(',');
+          const selfieIdx = headerCols.indexOf('selfie');
+          if (selfieIdx !== -1) headerCols[selfieIdx] = 'selfie_available';
+          lines[0] = headerCols.join(',');
+
           // Modify data lines
           for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim()) {
               const parts = lines[i].split(',');
-              if (parts.length >= 9) {
-                // Selfie is the 9th column (index 8)
-                parts[8] = parts[8] ? 'HAS_SELFIE' : 'NO_SELFIE';
-                lines[i] = parts.join(',');
+              if (selfieIdx !== -1 && parts.length > selfieIdx) {
+                parts[selfieIdx] = parts[selfieIdx] ? 'HAS_SELFIE' : 'NO_SELFIE';
               }
+              lines[i] = parts.join(',');
             }
           }
         }
