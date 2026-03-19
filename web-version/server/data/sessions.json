@@ -1248,5 +1248,35 @@
     "status": "closed",
     "remaining_seconds": 0,
     "closed_at": "2026-03-19T08:06:12.552Z"
+  },
+  {
+    "session_id": 85,
+    "created_at": "2026-03-19T08:25:11.640Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "ygu",
+    "class_name": "gyu",
+    "lecturer_name": "u",
+    "note": "gyu",
+    "expiry_time": "2026-03-19T08:35:11.640Z",
+    "label": "ygu - gyu",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T08:35:36.745Z"
+  },
+  {
+    "session_id": 86,
+    "created_at": "2026-03-19T08:57:34.309Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "sduj",
+    "class_name": "i",
+    "lecturer_name": "i",
+    "note": "j",
+    "expiry_time": "2026-03-19T09:07:34.309Z",
+    "label": "sduj - i",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T08:59:59.932Z"
   }
 ]

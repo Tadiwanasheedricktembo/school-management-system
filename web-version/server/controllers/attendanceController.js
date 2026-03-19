@@ -125,33 +125,61 @@ class AttendanceController {
   static appendToCSV(roll_number, student_name, session_id, token, device_id, latitude, longitude, selfie, callback) {
     const scanTime = new Date().toISOString();
     const status = 'present';
-    // ensure values are strings and fallback to empty
-    const roll = AttendanceController.csvSafe(roll_number);
-    const name = AttendanceController.csvSafe(student_name);
-    const sess = AttendanceController.csvSafe(session_id);
-    const tok = AttendanceController.csvSafe(token);
-    const dev = AttendanceController.csvSafe(device_id);
-    const lat = AttendanceController.csvSafe(latitude);
-    const lon = AttendanceController.csvSafe(longitude);
-    const sf = AttendanceController.csvSafe(selfie);
+    // Ensure values are strings and fallback to empty.
+    // IMPORTANT: write columns in the *current CSV header order* (existing files may have different order).
+    const recordValues = {
+      roll_number: AttendanceController.csvSafe(roll_number),
+      student_name: AttendanceController.csvSafe(student_name),
+      session_id: AttendanceController.csvSafe(session_id),
+      token: AttendanceController.csvSafe(token),
+      scan_time: AttendanceController.csvSafe(scanTime),
+      status: AttendanceController.csvSafe(status),
+      device_id: AttendanceController.csvSafe(device_id),
+      latitude: AttendanceController.csvSafe(latitude),
+      longitude: AttendanceController.csvSafe(longitude),
+      selfie: AttendanceController.csvSafe(selfie)
+    };
 
-    const csvLine = `${roll},${name},${sess},${tok},${scanTime},${status},${dev},${lat},${lon},${sf}\n`;
+    let headers = [
+      'roll_number',
+      'student_name',
+      'session_id',
+      'token',
+      'scan_time',
+      'status',
+      'device_id',
+      'latitude',
+      'longitude',
+      'selfie'
+    ];
+    try {
+      const content = fs.readFileSync(ATTENDANCE_FILE, 'utf8');
+      const firstLine = (content.split('\n')[0] || '').trim();
+      if (firstLine) {
+        const parsed = AttendanceController.getHeaderIndexes(firstLine);
+        if (parsed.headers && parsed.headers.length) headers = parsed.headers;
+      }
+    } catch (e) {
+      // Fallback to default header order above
+    }
+
+    const csvLine = `${headers.map((h) => recordValues[h] ?? '').join(',')}\n`;
 
     fs.appendFile(ATTENDANCE_FILE, csvLine, 'utf8', (err) => {
       if (err) {
         return callback(err);
       }
       callback(null, {
-        roll_number: roll,
-        student_name: name,
-        session_id: sess,
-        token: tok,
+        roll_number: recordValues.roll_number,
+        student_name: recordValues.student_name,
+        session_id: recordValues.session_id,
+        token: recordValues.token,
         scanTime,
         status,
-        device_id: dev,
-        latitude: lat,
-        longitude: lon,
-        selfie: sf
+        device_id: recordValues.device_id,
+        latitude: recordValues.latitude,
+        longitude: recordValues.longitude,
+        selfie: recordValues.selfie
       });
     });
   }
@@ -196,9 +224,13 @@ class AttendanceController {
     // Normalize selfie fields: prioritize 'selfie', then 'selfie_metadata', then 'selfie_path'
     const selfieValue = selfie || selfie_metadata || selfie_path || '';
 
+    const studentNameKeyPresent = Object.prototype.hasOwnProperty.call(rawBody, 'studentName');
+    const student_nameKeyPresent = Object.prototype.hasOwnProperty.call(rawBody, 'student_name');
     console.log(
-      `[ATTENDANCE_REQUEST] Roll Number: ${roll_number}, Token: ${token}, Device ID: ${device_id}, ` +
-        `Latitude: ${latitude}, Longitude: ${longitude}, Selfie: ${selfieValue ? '[provided]' : '[none]'} `
+      `[ATTENDANCE_REQUEST] Roll Number: ${roll_number}, Student Name: ${student_name || '[missing]'} ` +
+        `(received studentName=${studentNameKeyPresent}, student_name=${student_nameKeyPresent}), ` +
+        `Token: ${token}, Device ID: ${device_id}, Latitude: ${latitude}, Longitude: ${longitude}, ` +
+        `Selfie: ${selfieValue ? '[provided]' : '[none]'} `
     );
 
     // required identity fields: roll_number is required; student_name is optional for backward compatibility

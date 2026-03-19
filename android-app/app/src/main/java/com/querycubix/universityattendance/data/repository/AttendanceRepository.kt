@@ -17,7 +17,7 @@ class AttendanceRepository(private val apiService: AttendanceApiService) {
     ): Response<AttendanceResponse> {
         return apiService.markAttendance(
             AttendanceRequest(
-                student_name = studentName,
+                studentName = studentName,
                 roll_number = rollNumber,
                 token = token,
                 device_id = deviceId,

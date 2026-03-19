@@ -6,8 +6,8 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 data class AttendanceRequest(
-    @SerializedName("student_name")
-    val student_name: String,
+    @SerializedName("studentName")
+    val studentName: String,
 
     @SerializedName("roll_number")
     val roll_number: String,
