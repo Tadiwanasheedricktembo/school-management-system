@@ -1278,5 +1278,50 @@
     "status": "closed",
     "remaining_seconds": 0,
     "closed_at": "2026-03-19T08:59:59.932Z"
+  },
+  {
+    "session_id": 87,
+    "created_at": "2026-03-19T09:08:00.997Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "kjn",
+    "class_name": "njk",
+    "lecturer_name": "njk",
+    "note": "jkn",
+    "expiry_time": "2026-03-19T09:18:00.997Z",
+    "label": "kjn - njk",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T09:11:07.488Z"
+  },
+  {
+    "session_id": 88,
+    "created_at": "2026-03-19T09:09:25.906Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "uih",
+    "class_name": "hui",
+    "lecturer_name": "hiu",
+    "note": "",
+    "expiry_time": "2026-03-19T09:19:25.906Z",
+    "label": "uih - hui",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T09:10:29.201Z"
+  },
+  {
+    "session_id": 89,
+    "created_at": "2026-03-19T09:11:17.264Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "opk",
+    "class_name": "kop",
+    "lecturer_name": "kop",
+    "note": "po",
+    "expiry_time": "2026-03-19T09:21:17.264Z",
+    "label": "opk - kop",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T09:15:48.257Z"
   }
 ]

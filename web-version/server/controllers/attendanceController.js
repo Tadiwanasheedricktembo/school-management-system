@@ -22,6 +22,141 @@ class AttendanceController {
     return { headers, idx };
   }
 
+  static looksLikeUuid(value) {
+    if (!value) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value).trim());
+  }
+
+  static looksLikeIsoDate(value) {
+    if (!value) return false;
+    // Basic ISO-8601 check: 2026-03-08T11:34:29.510Z
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(String(value).trim());
+  }
+
+  static isStatus(value) {
+    const v = String(value || '').trim().toLowerCase();
+    return v === 'present' || v === 'verified' || v === 'pending';
+  }
+
+  static migrateAttendanceCsvIfNeeded() {
+    if (!fs.existsSync(ATTENDANCE_FILE)) return;
+
+    const raw = fs.readFileSync(ATTENDANCE_FILE, 'utf8');
+    const lines = raw.split('\n');
+    if (!lines.length) return;
+
+    const headerLine = (lines[0] || '').trim();
+    if (!headerLine) return;
+
+    // Canonical internal schema (file stores selfie raw; download endpoint derives selfie_available)
+    const canonical = [
+      'roll_number',
+      'student_name',
+      'session_id',
+      'token',
+      'scan_time',
+      'status',
+      'device_id',
+      'latitude',
+      'longitude',
+      'selfie'
+    ];
+
+    // Normalize header aliases (selfie_available -> selfie)
+    let currentHeaders = headerLine.split(',').map((h) => h.trim());
+    let headerChanged = false;
+    currentHeaders = currentHeaders.map((h) => {
+      if (h === 'selfie_available') {
+        headerChanged = true;
+        return 'selfie';
+      }
+      if (h === 'studentName') {
+        headerChanged = true;
+        return 'student_name';
+      }
+      if (h === 'rollNumber') {
+        headerChanged = true;
+        return 'roll_number';
+      }
+      return h;
+    });
+
+    // If required columns are missing, we will append them (keeping existing order stable).
+    const missing = canonical.filter((c) => !currentHeaders.includes(c));
+    if (missing.length) {
+      currentHeaders = currentHeaders.concat(missing);
+      headerChanged = true;
+    }
+
+    // Parse + rewrite every record into canonical mapping.
+    const { idx } = AttendanceController.getHeaderIndexes(currentHeaders.join(','));
+    let migratedCount = 0;
+    let droppedCount = 0;
+
+    const rewritten = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line || !line.trim()) continue;
+
+      // Drop known junk/corruption lines found in your file (e.g. ",selfie" or ",")
+      if (line.trim() === ',' || line.trim() === ',selfie' || line.trim() === ',selfie_available') {
+        droppedCount++;
+        continue;
+      }
+
+      const parts = line.split(',');
+
+      // Map using header indexes (best case)
+      const row = {};
+      currentHeaders.forEach((h, colIdx) => {
+        row[h] = parts[colIdx] ?? '';
+      });
+
+      // Heuristic fix: detect old-row order that got shifted under the new header.
+      // Symptom: student_name contains numeric session_id, session_id contains UUID token,
+      // token contains ISO timestamp, scan_time contains a status like "present".
+      const sn = (row.student_name || '').trim();
+      const sess = (row.session_id || '').trim();
+      const tok = (row.token || '').trim();
+      const sc = (row.scan_time || '').trim();
+
+      const looksShiftedOld =
+        /^\d+$/.test(sn) &&
+        AttendanceController.looksLikeUuid(sess) &&
+        AttendanceController.looksLikeIsoDate(tok) &&
+        AttendanceController.isStatus(sc);
+
+      if (looksShiftedOld) {
+        // Old schema was: roll_number,session_id,token,scan_time,status,device_id,latitude,longitude,selfie
+        const old = parts;
+        row.roll_number = old[idx.roll_number ?? 0] ?? old[0] ?? '';
+        row.student_name = ''; // old rows had no student_name
+        row.session_id = old[1] ?? '';
+        row.token = old[2] ?? '';
+        row.scan_time = old[3] ?? '';
+        row.status = old[4] ?? '';
+        row.device_id = old[5] ?? '';
+        row.latitude = old[6] ?? '';
+        row.longitude = old[7] ?? '';
+        row.selfie = old[8] ?? '';
+        migratedCount++;
+      }
+
+      // Rewrite into canonical column order, ensuring fixed width (10 columns)
+      const outLine = canonical.map((h) => AttendanceController.csvSafe(row[h] ?? '')).join(',');
+      rewritten.push(outLine);
+    }
+
+    // If we changed header or migrated/dropped anything, rewrite the file in canonical schema.
+    if (headerChanged || migratedCount > 0 || droppedCount > 0) {
+      const newContent = `${canonical.join(',')}\n${rewritten.join('\n')}\n`;
+      fs.writeFileSync(ATTENDANCE_FILE, newContent, 'utf8');
+      console.log(
+        `[CSV_MIGRATION] Rewrote attendance CSV to canonical schema. migrated_rows=${migratedCount}, dropped_lines=${droppedCount}`
+      );
+    }
+  }
+
   // Ensure data directory and CSV file exist
   static ensureDataFile() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -59,6 +194,9 @@ class AttendanceController {
         fs.writeFileSync(ATTENDANCE_FILE, lines.join('\n'), 'utf8');
       }
     }
+
+    // One-time repair if historical rows were written under an older schema/order.
+    AttendanceController.migrateAttendanceCsvIfNeeded();
   }
 
   // Check if roll_number and session_id already exist in CSV
@@ -164,6 +302,12 @@ class AttendanceController {
     }
 
     const csvLine = `${headers.map((h) => recordValues[h] ?? '').join(',')}\n`;
+
+    console.log('[CSV_WRITE_ROW]', {
+      header: headers,
+      record: recordValues,
+      linePreview: csvLine.slice(0, 180)
+    });
 
     fs.appendFile(ATTENDANCE_FILE, csvLine, 'utf8', (err) => {
       if (err) {
@@ -467,6 +611,12 @@ class AttendanceController {
         })
         .filter(record => record.session_id === session_id);
 
+      console.log('[SESSION_ATTENDANCE_PARSED]', {
+        session_id,
+        count: records.length,
+        sample: records.slice(0, 3)
+      });
+
       res.json({
         status: 'success',
         data: records
@@ -520,6 +670,7 @@ class AttendanceController {
         });
 
       console.log(`[RECORDS_SUCCESS] Total records returned: ${records.length}`);
+      console.log('[ALL_ATTENDANCE_PARSED_SAMPLE]', records.slice(0, 3));
 
       res.json({
         status: 'success',
