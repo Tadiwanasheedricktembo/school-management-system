@@ -3,16 +3,43 @@
     <style name="Theme.UniversityAttendance" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorSecondaryVariant">@color/secondary</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
         <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Background and Surface -->
         <item name="android:windowBackground">@color/background</item>
         <item name="colorSurface">@color/surface</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+
+        <item name="textAppearanceHeadline6">@style/TextAppearance.App.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.App.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.App.Subtitle2</item>
+    </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/bg_splash_gradient</item>
+        <item name="android:statusBarColor">#2563EB</item>
+        <item name="android:navigationBarColor">#0F172A</item>
+    </style>
+
+    <style name="TextAppearance.App.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.App.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 </resources>

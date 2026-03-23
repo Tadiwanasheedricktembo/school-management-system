@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Palette -->
+    <!-- Brand Palette -->
     <color name="primary">#2563EB</color>
-    <color name="primary_variant">#1D4ED8</color>
-    <color name="secondary">#2563EB</color>
+    <color name="primary_dark">#1D4ED8</color>
+    <color name="primary_light">#DBEAFE</color>
+    <color name="accent">#3B82F6</color>
 
     <!-- Semantic Colors -->
-    <color name="success">#16A34A</color>
-    <color name="success_light">#DCFCE7</color>
-    <color name="error">#DC2626</color>
+    <color name="success">#10B981</color>
+    <color name="success_light">#D1FAE5</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_light">#FEF3C7</color>
+    <color name="error">#EF4444</color>
     <color name="error_light">#FEE2E2</color>
+    <color name="info">#3B82F6</color>
+    <color name="info_light">#EFF6FF</color>
 
     <!-- Neutral Palette -->
-    <color name="background">#F9FAFB</color>
+    <color name="background">#F8FAFC</color>
     <color name="surface">#FFFFFF</color>
-    <color name="border_default">#D1D5DB</color>
+    <color name="border_default">#E2E8F0</color>
     <color name="border_focused">#2563EB</color>
 
     <!-- Text Palette -->
-    <color name="text_primary">#111827</color>
-    <color name="text_secondary">#6B7280</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_tertiary">#94A3B8</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <!-- Transparent helpers -->
+    <color name="scrim">#80000000</color>
 </resources>

@@ -111,6 +111,18 @@ The frontend can communicate with either backend:
 - ✅ Web-based attendance interface (attendance.html)
 - ✅ QR code display interface (qr.html)
 
+## How the System Works (End-to-End)
+1. **Lecturer logs in** on the web dashboard (`session.html`). Authentication uses JWT.
+2. **Lecturer creates a session** (`POST /api/session/create`). The backend stores session metadata and defines the attendance window.
+3. For the active session, the dashboard requests a **dynamic QR token** (`GET /api/qr/generate?session_id=<id>`). Tokens use a short expiry (approximately 30 seconds) and are only generated for open sessions.
+4. **Students scan the QR** in the Android app and call `POST /api/attendance/mark` with:
+   - `token` (from QR)
+   - `roll_number` (identity)
+   - optional details like `studentName`, `device_id`, `latitude`, `longitude`, and `selfie`
+5. The backend validates the token/session, checks duplicates for the same `(roll_number, session_id)` (and optionally `(device_id, session_id)`), then appends the attendance entry to `server/data/attendance_records.csv`.
+6. The lecturer dashboard shows **live attendance** via polling `GET /api/attendance/session/:session_id`.
+7. The lecturer can view **history** and export CSV via `GET /api/attendance/records` and `GET /api/attendance/download`.
+
 ## Next Steps
 
 1. Build additional frontend features (real-time updates, better UI)

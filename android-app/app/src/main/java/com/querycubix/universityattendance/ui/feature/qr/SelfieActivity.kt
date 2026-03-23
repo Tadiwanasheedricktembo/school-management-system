@@ -49,7 +49,10 @@ class SelfieActivity : AppCompatActivity() {
         binding = ActivitySelfieBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        enableImmersiveMode()
+        // Make it full screen but keep status bar for modern look if desired, 
+        // but requirements say "Make both screens look modern, clean, professional"
+        // Let's use standard layout but with custom status bar color.
+        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -59,6 +62,7 @@ class SelfieActivity : AppCompatActivity() {
 
         binding.btnCapture.setOnClickListener { takePhoto() }
         binding.btnRetake.setOnClickListener { resetUI() }
+        binding.btnBack.setOnClickListener { finish() }
         binding.btnDone.setOnClickListener {
             lastSavedUri?.let { uri ->
                 setResult(Activity.RESULT_OK, Intent().apply { data = uri })
@@ -70,29 +74,14 @@ class SelfieActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun enableImmersiveMode() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.let {
-                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-        }
-    }
-
     private fun resetUI() {
         binding.ivPreview.visibility = View.GONE
         binding.viewFinder.visibility = View.VISIBLE
         binding.faceOverlay.visibility = View.VISIBLE
-        binding.cvGuidance.visibility = View.VISIBLE
+        binding.tvGuidance.visibility = View.VISIBLE
+        binding.tvFeedback.visibility = View.VISIBLE
         binding.btnCapture.visibility = View.VISIBLE
-        binding.btnRetake.visibility = View.GONE
-        binding.btnDone.visibility = View.GONE
+        binding.layoutPostCapture.visibility = View.GONE
         lastSavedUri = null
     }
 
@@ -149,8 +138,8 @@ class SelfieActivity : AppCompatActivity() {
     private fun updateOverlay(faces: List<com.google.mlkit.vision.face.Face>, imgWidth: Int, imgHeight: Int) {
         if (faces.isEmpty()) {
             binding.faceOverlay.setFaceState(FaceOverlayView.FaceState.NO_FACE)
-            binding.tvGuidance.text = "Center your face"
-            binding.cvGuidance.setCardBackgroundColor(ContextCompat.getColor(this, R.color.text_primary).withAlpha(180))
+            binding.tvFeedback.text = "Detecting face..."
+            binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.primary_light))
             binding.btnCapture.isEnabled = false
             binding.btnCapture.alpha = 0.5f
             return
@@ -158,31 +147,25 @@ class SelfieActivity : AppCompatActivity() {
         
         if (faces.size > 1) {
             binding.faceOverlay.setFaceState(FaceOverlayView.FaceState.INVALID)
-            binding.tvGuidance.text = "Only one face allowed"
-            binding.cvGuidance.setCardBackgroundColor(ContextCompat.getColor(this, R.color.error).withAlpha(180))
+            binding.tvFeedback.text = "Only one face allowed"
+            binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.error_light))
             binding.btnCapture.isEnabled = false
             binding.btnCapture.alpha = 0.5f
             return
         }
 
         val face = faces[0]
-        
-        // 1. Tighter Pose Check
         val isFacingForward = abs(face.headEulerAngleY) < 12 && abs(face.headEulerAngleX) < 12
-        
-        // 2. Strict Size Check (Face must occupy ~40-50% of image height for tight framing)
         val faceHeightRatio = face.boundingBox.height().toFloat() / imgHeight
-        val isCloseEnough = faceHeightRatio > 0.42 // Tighter threshold
-        val isTooClose = faceHeightRatio > 0.75
-
-        // 3. Centering Check
+        val isCloseEnough = faceHeightRatio > 0.4
+        val isTooClose = faceHeightRatio > 0.8
         val faceCenterX = face.boundingBox.centerX().toFloat() / imgWidth
         val isCentered = faceCenterX in 0.35..0.65
 
         if (isFacingForward && isCloseEnough && !isTooClose && isCentered) {
             binding.faceOverlay.setFaceState(FaceOverlayView.FaceState.VALID)
-            binding.tvGuidance.text = "Face aligned ✓"
-            binding.cvGuidance.setCardBackgroundColor(ContextCompat.getColor(this, R.color.success).withAlpha(200))
+            binding.tvFeedback.text = "Face aligned ✓"
+            binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.success_light))
             binding.btnCapture.isEnabled = true
             binding.btnCapture.alpha = 1.0f
         } else {
@@ -190,22 +173,15 @@ class SelfieActivity : AppCompatActivity() {
             binding.btnCapture.isEnabled = false
             binding.btnCapture.alpha = 0.5f
             
-            binding.tvGuidance.text = when {
-                !isFacingForward -> "Face the camera directly"
-                !isCentered -> "Center your face"
-                !isCloseEnough -> "Move closer"
-                isTooClose -> "Face too far" // Technically means too close to lens, but user perceives it as "too close"
-                else -> "Align face correctly"
+            binding.tvFeedback.text = when {
+                !isFacingForward -> "Look straight at the camera"
+                !isCentered -> "Center your face in the frame"
+                !isCloseEnough -> "Move a bit closer"
+                isTooClose -> "Too close, move back"
+                else -> "Align your face"
             }
-            
-            if (isTooClose) binding.tvGuidance.text = "Move back slightly"
-            
-            binding.cvGuidance.setCardBackgroundColor(ContextCompat.getColor(this, R.color.error).withAlpha(180))
+            binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.warning_light))
         }
-    }
-
-    private fun Int.withAlpha(alpha: Int): Int {
-        return (alpha shl 24) or (this and 0x00FFFFFF)
     }
 
     private fun takePhoto() {
@@ -223,10 +199,10 @@ class SelfieActivity : AppCompatActivity() {
                 binding.ivPreview.visibility = View.VISIBLE
                 binding.viewFinder.visibility = View.GONE
                 binding.faceOverlay.visibility = View.GONE
-                binding.cvGuidance.visibility = View.GONE
+                binding.tvGuidance.visibility = View.GONE
+                binding.tvFeedback.visibility = View.GONE
                 binding.btnCapture.visibility = View.GONE
-                binding.btnRetake.visibility = View.VISIBLE
-                binding.btnDone.visibility = View.VISIBLE
+                binding.layoutPostCapture.visibility = View.VISIBLE
             }
         })
     }

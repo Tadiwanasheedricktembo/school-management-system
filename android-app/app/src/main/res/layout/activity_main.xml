@@ -12,382 +12,686 @@
         android:background="@color/surface"
         app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/qr_attendance"
-            app:titleCentered="true"
-            app:titleTextColor="@color/text_primary" />
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Attendance"
+                    android:textAppearance="?attr/textAppearanceHeadline4"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Mark your attendance securely"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnAbout"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="About"
+                android:src="@android:drawable/ic_dialog_info"
+                app:tint="@color/text_secondary" />
+
+        </RelativeLayout>
+
+        <!-- Step Indicator -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/indicatorStep1"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:background="@color/primary" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Info"
+                    android:textSize="10sp"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View android:layout_width="8dp" android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/indicatorStep2"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:background="@color/border_default" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Face"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_tertiary" />
+            </LinearLayout>
+
+            <View android:layout_width="8dp" android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/indicatorStep3"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:background="@color/border_default" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Location"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_tertiary" />
+            </LinearLayout>
+
+            <View android:layout_width="8dp" android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/indicatorStep4"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:background="@color/border_default" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Scan"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_tertiary" />
+            </LinearLayout>
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
+            android:id="@+id/mainContentLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="8dp">
 
-            <!-- STEP 1: IDENTITY -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="8dp"
-                android:letterSpacing="0.1"
-                android:text="STEP 1: IDENTITY"
-                android:textAppearance="?attr/textAppearanceOverline"
-                android:textColor="@color/text_secondary"
-                android:textStyle="bold" />
-
+            <!-- SECTION 1: STUDENT INFO -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStep1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="@color/surface"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
+                app:cardElevation="6dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilStudentName"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Student Name"
-                        app:boxCornerRadiusBottomEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:helperText="Enter your full name"
-                        app:hintTextColor="@color/primary"
-                        app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-                        app:startIconTint="@color/text_secondary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etStudentName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textPersonName|textCapWords"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilRollNumber"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/enter_roll_number"
-                        app:boxCornerRadiusBottomEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:helperText="Enter your complete roll number"
-                        app:hintTextColor="@color/primary"
-                        app:startIconDrawable="@android:drawable/ic_menu_edit"
-                        app:startIconTint="@color/text_secondary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etRollNumber"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapCharacters"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- STEP 2: VERIFICATION -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="8dp"
-                android:letterSpacing="0.1"
-                android:text="STEP 2: VERIFICATION"
-                android:textAppearance="?attr/textAppearanceOverline"
-                android:textColor="@color/text_secondary"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <!-- Selfie Section -->
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_toStartOf="@+id/tvSelfieStatus"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Selfie Capture"
-                                android:textAppearance="?attr/textAppearanceSubtitle1"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Take a clear selfie for verification"
-                                android:textAppearance="?attr/textAppearanceCaption"
-                                android:textColor="@color/text_secondary" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvSelfieStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:background="@android:drawable/editbox_background"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:text="CAPTURED"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-                    </RelativeLayout>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cvSelfiePreview"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="16dp"
-                        android:visibility="gone"
-                        app:cardCornerRadius="50dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/success"
-                        app:strokeWidth="2dp">
-
-                        <ImageView
-                            android:id="@+id/ivSelfiePreview"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="Selfie Preview"
-                            android:scaleType="centerCrop" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTakeSelfie"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="Capture Selfie"
-                        android:textAllCaps="false"
-                        app:cornerRadius="8dp"
-                        app:icon="@android:drawable/ic_menu_camera"
-                        app:strokeColor="@color/border_default" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="16dp"
-                        android:background="@color/background" />
-
-                    <!-- Location Section -->
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_toStartOf="@+id/tvLocationStatus"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Location Verification"
-                                android:textAppearance="?attr/textAppearanceSubtitle1"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Confirm you are in the allowed area"
-                                android:textAppearance="?attr/textAppearanceCaption"
-                                android:textColor="@color/text_secondary" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvLocationStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:background="@android:drawable/editbox_background"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:text="AVAILABLE"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-                    </RelativeLayout>
-
+                    <!-- Summary State -->
                     <LinearLayout
-                        android:id="@+id/layoutLocationInfo"
+                        android:id="@+id/layoutStep1Summary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
+                        android:padding="20dp"
                         android:visibility="gone"
-                        tools:visibility="visible">
+                        android:background="?attr/selectableItemBackground">
 
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@android:drawable/presence_online"
-                            app:tint="@color/success" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="@color/primary_light">
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="12dp"
+                                android:src="@android:drawable/ic_menu_myplaces"
+                                app:tint="@color/primary" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <TextView
-                            android:id="@+id/tvLocationPreview"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:textAppearance="?attr/textAppearanceCaption"
-                            android:textColor="@color/success"
-                            android:textStyle="bold"
-                            tools:text="Location Available" />
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvStep1SummaryName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceSubtitle1"
+                                android:textColor="@color/text_primary"
+                                android:textStyle="bold"
+                                tools:text="John Doe" />
+
+                            <TextView
+                                android:id="@+id/tvStep1SummaryRoll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceCaption"
+                                android:textColor="@color/text_secondary"
+                                tools:text="2026-CS-001" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivStep1Check"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
                     </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGetLocation"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <!-- Input State -->
+                    <LinearLayout
+                        android:id="@+id/layoutStep1Content"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="Identify Location"
-                        android:textAllCaps="false"
-                        app:cornerRadius="8dp"
-                        app:icon="@android:drawable/ic_menu_mylocation"
-                        app:strokeColor="@color/border_default" />
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="24dp"
+                            android:text="Student Details"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilStudentName"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary"
+                            app:hintTextColor="@color/primary"
+                            android:hint="Full Name">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etStudentName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName|textCapWords"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilRollNumber"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="24dp"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary"
+                            app:hintTextColor="@color/primary"
+                            android:hint="Roll Number">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etRollNumber"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textCapCharacters"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStep1Continue"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="Continue"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="28dp"
+                            app:backgroundTint="@color/primary" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- STEP 3: COMPLETION -->
+            <!-- SECTION 2: VERIFICATION STEPS -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="8dp"
-                android:letterSpacing="0.1"
-                android:text="STEP 3: COMPLETION"
-                android:textAppearance="?attr/textAppearanceOverline"
+                android:layout_marginBottom="12dp"
+                android:text="Security Verification"
+                android:textAppearance="?attr/textAppearanceSubtitle2"
                 android:textColor="@color/text_secondary"
                 android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnScanQr"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="Scan Attendance QR"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                app:cornerRadius="12dp"
-                app:icon="@android:drawable/ic_menu_view"
-                app:iconGravity="textStart"
-                app:rippleColor="@color/white" />
-
-            <TextView
-                android:id="@+id/tvStatus"
+            <!-- STEP 2: FACE VERIFICATION -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStep2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceCaption"
-                android:textColor="@color/text_secondary"
-                android:textStyle="bold"
-                tools:text="READY TO SCAN" />
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp">
 
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="8dp"
-                android:visibility="gone" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <View
+                    <LinearLayout
+                        android:id="@+id/layoutStep2Summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="20dp"
+                        android:visibility="gone">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1.5dp"
+                            app:strokeColor="@color/success">
+                            <ImageView
+                                android:id="@+id/ivStep2SummaryPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/tvStep2SummaryLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:text="Face Verified"
+                            android:textAppearance="?attr/textAppearanceSubtitle1"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/ivStep2Check"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_check_circle" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutStep2Content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/info_light">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="12dp"
+                                    android:src="@drawable/ic_face_recognition"
+                                    app:tint="@color/primary" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Face Recognition"
+                                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                                    android:textColor="@color/text_primary"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvStep2Subtitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Identity check required"
+                                    android:textAppearance="?attr/textAppearanceCaption"
+                                    android:textColor="@color/text_secondary" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/ivStep2StateIcon"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_secure"
+                                android:alpha="0.3"
+                                app:tint="@color/text_tertiary" />
+                        </LinearLayout>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cvSelfiePreview"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="24dp"
+                            android:visibility="gone"
+                            app:cardCornerRadius="60dp"
+                            app:cardElevation="4dp"
+                            app:strokeColor="@color/primary"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/ivSelfiePreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTakeSelfie"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="20dp"
+                            android:text="Start Face Scan"
+                            android:textAllCaps="false"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold"
+                            app:rippleColor="@color/primary_light" />
+
+                        <ProgressBar
+                            android:id="@+id/pbStep2"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- STEP 3: LOCATION VERIFICATION -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStep3"
                 android:layout_width="match_parent"
-                android:layout_height="100dp" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/layoutStep3Summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="20dp"
+                        android:visibility="gone">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="@color/warning_light">
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_location_pin"
+                                app:tint="@color/warning" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/tvStep3SummaryLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:text="Location Verified"
+                            android:textAppearance="?attr/textAppearanceSubtitle1"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/ivStep3Check"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_check_circle" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutStep3Content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/warning_light">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="12dp"
+                                    android:src="@drawable/ic_location_pin"
+                                    app:tint="@color/warning" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="GPS Location"
+                                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                                    android:textColor="@color/text_primary"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvStep3Subtitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Campus area check"
+                                    android:textAppearance="?attr/textAppearanceCaption"
+                                    android:textColor="@color/text_secondary" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/ivStep3StateIcon"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_secure"
+                                android:alpha="0.3"
+                                app:tint="@color/text_tertiary" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnGetLocation"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="20dp"
+                            android:text="Verify GPS Location"
+                            android:textAllCaps="false"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold"
+                            app:rippleColor="@color/primary_light" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ACTION SECTION -->
+            <LinearLayout
+                android:id="@+id/cardStep4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvScanHelper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="Complete all checks to continue"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold" />
+
+                <!-- Pill Status Badge (will be shown when ready) -->
+                <LinearLayout
+                    android:id="@+id/layoutStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_verified_pill"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_check_circle" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="READY TO SCAN"
+                        android:textColor="#10B981"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnScanQr"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:enabled="false"
+                    android:text="Scan Attendance QR"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0"
+                    app:cornerRadius="32dp"
+                    app:elevation="8dp"
+                    android:backgroundTint="@color/primary"
+                    app:backgroundTint="@null"
+                    android:background="@drawable/bg_button_gradient" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textAppearance="?attr/textAppearanceSubtitle2"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:cardBackgroundColor="@color/surface"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="8dp"
-        app:strokeWidth="0dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="12dp">
-
-            <View
-                android:id="@+id/vConnectionDot"
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:layout_marginEnd="8dp"
-                android:background="@android:drawable/presence_online"
-                app:tint="@color/success" />
-
-            <TextView
-                android:id="@+id/tvConnectionStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="System Online"
-                android:textAppearance="?attr/textAppearanceCaption"
-                android:textColor="@color/text_secondary" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

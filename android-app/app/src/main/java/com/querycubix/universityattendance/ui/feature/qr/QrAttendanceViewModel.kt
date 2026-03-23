@@ -19,6 +19,8 @@ sealed class QrAttendanceState {
     data class Error(val message: String) : QrAttendanceState()
 }
 
+enum class VerificationState { NOT_STARTED, PENDING, VERIFIED, FAILED }
+
 class QrAttendanceViewModel(
     private val repository: AttendanceRepository
 ) : ViewModel() {
@@ -26,10 +28,30 @@ class QrAttendanceViewModel(
     private val _uiState = MutableStateFlow<QrAttendanceState>(QrAttendanceState.Idle)
     val uiState: StateFlow<QrAttendanceState> = _uiState.asStateFlow()
 
-    // Persistent state to survive Activity recreation
+    private val _biometricState = MutableStateFlow(VerificationState.NOT_STARTED)
+    val biometricState: StateFlow<VerificationState> = _biometricState.asStateFlow()
+
+    private val _locationState = MutableStateFlow(VerificationState.NOT_STARTED)
+    val locationState: StateFlow<VerificationState> = _locationState.asStateFlow()
+
     var capturedLatitude: Double? = null
     var capturedLongitude: Double? = null
     var capturedSelfieBase64: String? = null
+
+    fun updateBiometricState(state: VerificationState) {
+        _biometricState.value = state
+        if (state != VerificationState.VERIFIED) {
+            capturedSelfieBase64 = null
+        }
+    }
+
+    fun updateLocationState(state: VerificationState) {
+        _locationState.value = state
+        if (state != VerificationState.VERIFIED) {
+            capturedLatitude = null
+            capturedLongitude = null
+        }
+    }
 
     fun markAttendance(
         studentName: String,
@@ -41,15 +63,6 @@ class QrAttendanceViewModel(
         selfie: String?
     ) {
         viewModelScope.launch {
-            Log.d("ATTENDANCE_LOG", "--- PRE-SUBMISSION DEBUG ---")
-            Log.d("ATTENDANCE_LOG", "Name: $studentName")
-            Log.d("ATTENDANCE_LOG", "Roll: $rollNumber")
-            Log.d("ATTENDANCE_LOG", "Token: $token")
-            Log.d("ATTENDANCE_LOG", "Device ID: $deviceId")
-            Log.d("ATTENDANCE_LOG", "Latitude: ${latitude ?: "NULL"}")
-            Log.d("ATTENDANCE_LOG", "Longitude: ${longitude ?: "NULL"}")
-            Log.d("ATTENDANCE_LOG", "Selfie (Base64 length): ${selfie?.length ?: 0}")
-            
             _uiState.value = QrAttendanceState.Loading
             try {
                 val response = repository.markAttendance(
@@ -63,10 +76,6 @@ class QrAttendanceViewModel(
                 )
                 
                 val body = response.body()
-                Log.d("ATTENDANCE_LOG", "--- BACKEND RESPONSE ---")
-                Log.d("ATTENDANCE_LOG", "Status Code: ${response.code()}")
-                Log.d("ATTENDANCE_LOG", "Response Body: ${Gson().toJson(body)}")
-
                 if (response.isSuccessful && body != null) {
                     if (body.success) {
                         _uiState.value = QrAttendanceState.Success(body.message)
@@ -74,12 +83,9 @@ class QrAttendanceViewModel(
                         _uiState.value = QrAttendanceState.Error(body.message)
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Unknown Server Error"
-                    Log.d("ATTENDANCE_LOG", "HTTP Error: $errorMsg")
-                    _uiState.value = QrAttendanceState.Error(errorMsg)
+                    _uiState.value = QrAttendanceState.Error(response.errorBody()?.string() ?: "Unknown Server Error")
                 }
             } catch (e: Exception) {
-                Log.e("ATTENDANCE_LOG", "Exception during request", e)
                 _uiState.value = QrAttendanceState.Error("Network Error: ${e.message}")
             }
         }
@@ -87,6 +93,8 @@ class QrAttendanceViewModel(
 
     fun resetState() {
         _uiState.value = QrAttendanceState.Idle
+        _biometricState.value = VerificationState.NOT_STARTED
+        _locationState.value = VerificationState.NOT_STARTED
         capturedLatitude = null
         capturedLongitude = null
         capturedSelfieBase64 = null

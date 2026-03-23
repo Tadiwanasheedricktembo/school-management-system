@@ -1,5 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">QR Attendance</string>
+    <string name="app_name">University Attendance</string>
+    <string name="attendance_system">Attendance System</string>
+    <string name="qr_attendance_system">QR Attendance System</string>
+    <string name="secure_verification">Secure Attendance Verification</string>
+    <string name="developer_name">Developed by Tembo Tadiwanashe</string>
+    <string name="company_name">Querycubix Softworks</string>
+
     <string name="qr_attendance">QR Attendance</string>
     <string name="scan_qr_code">Scan QR Code</string>
     <string name="scan_prompt">Scan a QR code to mark attendance</string>
@@ -8,7 +15,48 @@
     <string name="enter_roll_number">Enter Roll Number</string>
     <string name="error_empty_roll">Please enter your roll number</string>
 
-    <!-- New Strings -->
+    <!-- Step 1: Identity -->
+    <string name="step_1_identity">Identity</string>
+    <string name="verify_identity">Verify Identity</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="roll_number_hint">Roll Number</string>
+    <string name="btn_continue">Continue</string>
+    <string name="error_name_required">Name required</string>
+    <string name="error_roll_required">Roll number required</string>
+
+    <!-- Step 2: Selfie -->
+    <string name="step_2_verification">Selfie Verification</string>
+    <string name="biometric_verified">Biometric Verified</string>
+    <string name="face_verification">Face Verification</string>
+    <string name="selfie_instruction">Take a clear selfie for recognition.</string>
+    <string name="capture_selfie">Capture Selfie</string>
+    <string name="selfie_processed_success">Selfie processed successfully</string>
+
+    <!-- Step 3: Location -->
+    <string name="step_3_location">Location Verification</string>
+    <string name="location_verified">Location Verified</string>
+    <string name="location_check">Location Check</string>
+    <string name="location_instruction">Confirm you are within university premises.</string>
+    <string name="gps_position_secured">GPS Position Secured</string>
+    <string name="verify_location">Verify Location</string>
+    <string name="gps_verified">GPS Location Verified</string>
+    <string name="location_verified_toast">Location verified</string>
+
+    <!-- Step 4: Scan QR -->
+    <string name="step_4_attendance">Scan Attendance</string>
+    <string name="finalize_attendance">Finalize Attendance</string>
+    <string name="scan_attendance_qr">Scan Attendance QR</string>
+
+    <!-- Status & Common -->
+    <string name="status_required">REQUIRED</string>
+    <string name="status_captured">CAPTURED</string>
+    <string name="status_available">AVAILABLE</string>
+    <string name="status_pending">PENDING VERIFICATION</string>
+    <string name="status_ready">READY TO SCAN</string>
+    <string name="status_processing">PROCESSING...</string>
+    <string name="status_submitted">ATTENDANCE SUBMITTED</string>
+    <string name="status_failed">SUBMISSION FAILED</string>
+
     <string name="btn_selfie">Selfie</string>
     <string name="btn_location">Location</string>
     <string name="selfie_preview_desc">Selfie Preview</string>

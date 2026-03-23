@@ -236,9 +236,6 @@
             <a href="#" class="nav-item active">
                 <span>Records History</span>
             </a>
-            <a href="session.html" class="nav-item">
-                <span>Settings</span>
-            </a>
         </nav>
     </aside>
 
@@ -528,6 +525,34 @@
                 loadRecords();
             }
         });
+
+        // Keep sidebar active state correct across refresh/navigation.
+        // Also prevent href="#" hash-jumps from affecting layout.
+        (function syncSidebarActiveState() {
+            try {
+                const path = (window.location.pathname || '').toLowerCase();
+                const onAttendance = path.endsWith('attendance.html');
+
+                const navItems = document.querySelectorAll('.sidebar .nav-item');
+                navItems.forEach((item) => item.classList.remove('active'));
+
+                const dashboardItem = Array.from(navItems).find((i) =>
+                    (i.textContent || '').trim().toLowerCase().includes('dashboard')
+                );
+                const historyItem = Array.from(navItems).find((i) =>
+                    (i.textContent || '').trim().toLowerCase().includes('history')
+                );
+
+                const target = onAttendance ? historyItem : dashboardItem;
+                if (target) target.classList.add('active');
+
+                document.querySelectorAll('.sidebar a.nav-item[href="#"]').forEach((a) => {
+                    a.addEventListener('click', (e) => e.preventDefault());
+                });
+            } catch (e) {
+                // No-op: UI sync must never break core history logic.
+            }
+        })();
     </script>
 </body>
 </html>

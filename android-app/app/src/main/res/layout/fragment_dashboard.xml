@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="DBMS Project Phase 1 - Due Jan 25"
-                android:textColor="@color/secondary" />
+                android:textColor="@color/accent" />
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>

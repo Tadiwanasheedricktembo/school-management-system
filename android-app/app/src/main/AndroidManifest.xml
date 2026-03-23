@@ -21,8 +21,9 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".ui.main.MainActivity"
-            android:exported="true">
+            android:name=".ui.main.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,9 +31,25 @@
         </activity>
 
         <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.feature.qr.SelfieActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.feature.qr.CustomScannerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <activity
+            android:name=".ui.feature.qr.AboutActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:label="About" />
 
     </application>
 

@@ -1323,5 +1323,50 @@
     "status": "closed",
     "remaining_seconds": 0,
     "closed_at": "2026-03-19T09:15:48.257Z"
+  },
+  {
+    "session_id": 90,
+    "created_at": "2026-03-19T11:33:25.367Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "oi",
+    "class_name": "oij",
+    "lecturer_name": "io",
+    "note": "joi",
+    "expiry_time": "2026-03-19T11:43:25.367Z",
+    "label": "oi - oij",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-19T11:43:26.141Z"
+  },
+  {
+    "session_id": 91,
+    "created_at": "2026-03-21T04:03:47.259Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "Cyber Security Tools",
+    "class_name": "CT16",
+    "lecturer_name": "Mr Robot",
+    "note": "Bsc IT IV Semester",
+    "expiry_time": "2026-03-21T04:13:47.259Z",
+    "label": "Cyber Security Tools - CT16",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-21T04:06:38.290Z"
+  },
+  {
+    "session_id": 92,
+    "created_at": "2026-03-23T10:33:18.324Z",
+    "attendance_window_minutes": 10,
+    "is_closed": true,
+    "course_name": "jh",
+    "class_name": "bhj",
+    "lecturer_name": "jhb",
+    "note": "",
+    "expiry_time": "2026-03-23T10:43:18.324Z",
+    "label": "jh - bhj",
+    "status": "closed",
+    "remaining_seconds": 0,
+    "closed_at": "2026-03-23T10:39:35.893Z"
   }
 ]

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_splash_gradient">
+
+    <!-- Main Content Area -->
+    <LinearLayout
+        android:id="@+id/content_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45"
+        tools:visibility="visible">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#20FFFFFF"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#40FFFFFF"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="24dp"
+                android:src="@drawable/ic_check_circle"
+                android:contentDescription="@string/app_name"
+                app:tint="@color/white" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/qr_attendance_system"
+            android:textAppearance="?attr/textAppearanceHeadline5"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:letterSpacing="0.02" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/secure_verification"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textColor="#B3FFFFFF"
+            android:letterSpacing="0.05" />
+
+    </LinearLayout>
+
+    <!-- Footer Area -->
+    <LinearLayout
+        android:id="@+id/footer_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/developer_name"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="#80FFFFFF"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/company_name"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="#60FFFFFF"
+            android:letterSpacing="0.1" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

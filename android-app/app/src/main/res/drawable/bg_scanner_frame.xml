@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Top Left -->
+    <item android:width="40dp" android:height="40dp" android:gravity="top|start">
+        <shape>
+            <stroke android:width="4dp" android:color="@color/primary" />
+            <corners android:topLeftRadius="16dp" />
+        </shape>
+    </item>
+    <item android:width="36dp" android:height="36dp" android:gravity="top|start" android:top="4dp" android:left="4dp">
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <!-- Top Right -->
+    <item android:width="40dp" android:height="40dp" android:gravity="top|end">
+        <shape>
+            <stroke android:width="4dp" android:color="@color/primary" />
+            <corners android:topRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:width="36dp" android:height="36dp" android:gravity="top|end" android:top="4dp" android:right="4dp">
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <!-- Bottom Left -->
+    <item android:width="40dp" android:height="40dp" android:gravity="bottom|start">
+        <shape>
+            <stroke android:width="4dp" android:color="@color/primary" />
+            <corners android:bottomLeftRadius="16dp" />
+        </shape>
+    </item>
+    <item android:width="36dp" android:height="36dp" android:gravity="bottom|start" android:bottom="4dp" android:left="4dp">
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <!-- Bottom Right -->
+    <item android:width="40dp" android:height="40dp" android:gravity="bottom|end">
+        <shape>
+            <stroke android:width="4dp" android:color="@color/primary" />
+            <corners android:bottomRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:width="36dp" android:height="36dp" android:gravity="bottom|end" android:bottom="4dp" android:right="4dp">
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</layer-list>

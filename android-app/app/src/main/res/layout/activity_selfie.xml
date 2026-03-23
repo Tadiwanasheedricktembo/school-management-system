@@ -11,36 +11,75 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Professional KYC Overlay -->
     <com.querycubix.universityattendance.ui.feature.qr.FaceOverlayView
         android:id="@+id/faceOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cvGuidance"
+    <!-- Top Bar -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/scrim"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@android:drawable/ic_menu_revert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Face Verification"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvGuidance"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="32dp"
-        android:layout_marginTop="48dp"
-        app:cardBackgroundColor="#CC111827"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_scanner_frame"
+        android:backgroundTint="#80000000"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="Align your face inside the frame"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
 
-        <TextView
-            android:id="@+id/tvGuidance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="12dp"
-            android:text="Align your face inside the frame"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
-            android:textColor="@color/white"
-            android:textStyle="bold" />
-    </com.google.android.material.card.MaterialCardView>
+    <!-- Live Feedback Text (UI Only) -->
+    <TextView
+        android:id="@+id/tvFeedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Detecting face..."
+        android:textAppearance="?attr/textAppearanceCaption"
+        android:textColor="@color/primary_light"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/bottomActionContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/ivPreview"
@@ -48,64 +87,78 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:visibility="gone"
-        android:contentDescription="Selfie Preview" />
+        tools:visibility="gone" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCapture"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginBottom="48dp"
-        android:insetLeft="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        app:backgroundTint="@color/white"
-        app:cornerRadius="36dp"
-        app:icon="@android:drawable/ic_menu_camera"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="32dp"
-        app:iconTint="@color/black"
+    <!-- Bottom Action Area -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomActionContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/surface"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:rippleColor="@color/primary"
-        app:strokeColor="@color/border_default"
-        app:strokeWidth="4dp" />
+        android:layout_marginBottom="-24dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRetake"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="32dp"
-        android:text="Retake"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnDone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:strokeColor="@color/white" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="48dp"
+            android:paddingTop="24dp"
+            android:paddingHorizontal="24dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDone"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        android:text="Confirm"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        app:backgroundTint="@color/primary"
-        app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnRetake" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCapture"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="36dp"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="32dp"
+                app:iconTint="@color/white"
+                app:strokeColor="@color/primary_light"
+                app:strokeWidth="4dp" />
+
+            <LinearLayout
+                android:id="@+id/layoutPostCapture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRetake"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Retake"
+                    android:textAllCaps="false"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDone"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Confirm"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

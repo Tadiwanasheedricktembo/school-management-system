@@ -75,6 +75,7 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-refresh { background: var(--info); color: white; }
         .btn-end { background: var(--danger); color: white; }
+        .btn-export { background: var(--success); color: white; }
         .btn-outline { background: #f1f5f9; color: var(--text-main); }
 
         /* Session Info List */
@@ -200,7 +201,6 @@
         <nav>
             <a href="#" class="nav-item active" id="nav-dashboard"><span>Dashboard</span></a>
             <a href="attendance.html" class="nav-item" id="nav-history"><span>History</span></a>
-            <a href="#" class="nav-item" id="nav-settings"><span>Settings</span></a>
         </nav>
     </aside>
 
@@ -274,7 +274,8 @@
                                     </div>
                                     <div class="btn-group" style="margin-top: 1rem;">
                                         <button class="btn-refresh" id="refreshBtn" onclick="refreshQR()" disabled>Refresh QR</button>
-                                        <button class="btn-end" id="endBtn" onclick="endSessionAndExport()" disabled>End Session & Export</button>
+                                        <button class="btn-end" id="endSessionBtn" onclick="endSessionWithConfirm()" disabled>End Session</button>
+                                        <button class="btn-export" id="exportBtn" onclick="exportAttendance()" disabled>Export</button>
                                     </div>
                                 </div>
                             </div>
@@ -567,9 +568,8 @@
             } catch (err) { showMessage("error", "Failed to end session"); }
         }
 
-        async function endSessionAndExport() {
+        async function exportAttendance() {
             const sessionIdForExport = currentSessionId;
-            await endSession();
             if (!sessionIdForExport) return;
 
             try {
@@ -595,6 +595,19 @@
                 console.error('Export failed', err);
                 showMessage("error", "Failed to export attendance.");
             }
+        }
+
+        async function endSessionAndExport() {
+            // Backward-compatible combined flow (no longer triggered by UI).
+            await endSession();
+            await exportAttendance();
+        }
+
+        async function endSessionWithConfirm() {
+            if (!currentSessionId) return;
+            const ok = window.confirm("Are you sure you want to end this session?");
+            if (!ok) return;
+            await endSession();
         }
 
         async function loadQR() {
@@ -783,13 +796,47 @@
         }
 
         function updateControls() {
-            document.getElementById("refreshBtn").disabled = !currentSessionId || sessionIsClosed;
-            document.getElementById("endBtn").disabled = !currentSessionId || sessionIsClosed;
+            const refreshBtn = document.getElementById("refreshBtn");
+            const endSessionBtn = document.getElementById("endSessionBtn");
+            const exportBtn = document.getElementById("exportBtn");
+
+            if (refreshBtn) refreshBtn.disabled = !currentSessionId || sessionIsClosed;
+            if (endSessionBtn) endSessionBtn.disabled = !currentSessionId || sessionIsClosed;
+            // Export should remain available even after ending (as long as we have a session id).
+            if (exportBtn) exportBtn.disabled = !currentSessionId;
         }
 
         setInterval(() => {
             if (currentSessionId && !sessionIsClosed) loadQR();
         }, 20000);
+
+        // Keep sidebar active state correct across refresh/navigation.
+        // Also prevent any href="#" hash-jump from affecting layout.
+        (function syncSidebarActiveState() {
+            try {
+                const path = (window.location.pathname || '').toLowerCase();
+                const onAttendance = path.endsWith('attendance.html');
+
+                const navItems = document.querySelectorAll('.sidebar .nav-item');
+                navItems.forEach((item) => item.classList.remove('active'));
+
+                const dashboardItem = Array.from(navItems).find((i) =>
+                    (i.textContent || '').trim().toLowerCase().includes('dashboard')
+                );
+                const historyItem = Array.from(navItems).find((i) =>
+                    (i.textContent || '').trim().toLowerCase().includes('history')
+                );
+
+                const target = onAttendance ? historyItem : dashboardItem;
+                if (target) target.classList.add('active');
+
+                document.querySelectorAll('.sidebar a.nav-item[href="#"]').forEach((a) => {
+                    a.addEventListener('click', (e) => e.preventDefault());
+                });
+            } catch (e) {
+                // No-op: UI sync must never break core dashboard logic.
+            }
+        })();
     </script>
 </body>
 </html>
