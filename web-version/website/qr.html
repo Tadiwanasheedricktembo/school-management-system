@@ -13,11 +13,20 @@
 <script>
 
 async function loadQR(){
+    // Get session_id from URL parameter, default to 1
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id') || '1';
 
     // the backend server in this workspace defaults to port 3000
     // make sure it is running before opening this page
-    const response = await fetch("http://localhost:3000/api/qr/generate?session_id=1");
+    const response = await fetch(`http://localhost:3000/api/qr/generate?session_id=${sessionId}`);
     const data = await response.json();
+
+    if (!response.ok) {
+        document.getElementById("qrImage").src = '';
+        document.body.innerHTML = `<h2>Error: ${data.message || 'Failed to load QR'}</h2>`;
+        return;
+    }
 
     // backend returns `qr_code` field containing the data URL
     document.getElementById("qrImage").src = data.qr_code;

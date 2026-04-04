@@ -10,8 +10,12 @@ require('./config/database');
 const qrRoutes = require('./routes/qrRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const anomalyRoutes = require('./routes/anomalyRoutes');
 const SessionController = require('./controllers/sessionController');
 const { router: authRoutes, verifyLecturer } = require('./controllers/authController');
+const { seedDefaultAdmin } = require('./scripts/seedAdmin');
+const { verifyAuth, requireAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,6 +56,7 @@ app.use('/api/session', (req, res, next) => {
   }
   verifyLecturer(req, res, next);
 }, sessionRoutes);
+app.use('/api/admin', verifyAuth, requireAdmin, adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -61,6 +66,10 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Static file serving for website
+console.log('Static website path:', path.join(__dirname, '..', 'website'));
+app.use('/website', express.static(path.join(__dirname, '..', 'website')));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -102,6 +111,10 @@ const server = app.listen(PORT, HOST, () => {
     console.log('LAN IPv4 addresses:');
     ipv4.forEach((s) => console.log(`- ${s}`));
   }
+
+  seedDefaultAdmin().catch((err) => {
+    console.error('[SEED_ADMIN] Failed:', err.message);
+  });
 
   // Periodically close any sessions that have reached their expiry time
   SessionController.startExpiryWatcher();

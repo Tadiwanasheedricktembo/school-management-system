@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const TokenService = require('../services/tokenService');
 const SessionController = require('./sessionController');
+const { getAllSessions } = require('../utils/sessionStore');
+const db = require('../config/database');
+const AnomalyDetector = require('../services/anomalyDetector');
 
 const ATTENDANCE_FILE = path.join(__dirname, '..', 'data', 'attendance_records.csv');
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -59,7 +62,15 @@ class AttendanceController {
       'device_id',
       'latitude',
       'longitude',
-      'selfie'
+      'gps_accuracy',
+      'distance_from_class_meters',
+      'selfie',
+      'anomaly_flags',
+      'anomaly_score',
+      'anomaly_severity',
+      'anomaly_review_status',
+      'anomaly_notes',
+      'lecturer_id'
     ];
 
     // Normalize header aliases (selfie_available -> selfie)
@@ -139,10 +150,11 @@ class AttendanceController {
         row.latitude = old[6] ?? '';
         row.longitude = old[7] ?? '';
         row.selfie = old[8] ?? '';
+        row.lecturer_id = old[9] ?? '';
         migratedCount++;
       }
 
-      // Rewrite into canonical column order, ensuring fixed width (10 columns)
+      // Rewrite into canonical column order, ensuring fixed width (11 columns)
       const outLine = canonical.map((h) => AttendanceController.csvSafe(row[h] ?? '')).join(',');
       rewritten.push(outLine);
     }
@@ -169,7 +181,7 @@ class AttendanceController {
       // include all possible columns up front
       fs.writeFileSync(
         ATTENDANCE_FILE,
-        'roll_number,student_name,session_id,token,scan_time,status,device_id,latitude,longitude,selfie\n',
+        'roll_number,student_name,session_id,token,scan_time,status,device_id,latitude,longitude,selfie,lecturer_id\n',
         'utf8'
       );
     } else {
@@ -177,7 +189,7 @@ class AttendanceController {
       const content = fs.readFileSync(ATTENDANCE_FILE, 'utf8');
       const lines = content.split('\n');
       const header = lines[0];
-      const required = ['student_name', 'device_id', 'latitude', 'longitude', 'selfie'];
+      const required = ['student_name', 'device_id', 'latitude', 'longitude', 'selfie', 'lecturer_id'];
       const headers = header.split(',');
       const missing = required.filter((col) => !headers.includes(col));
       if (missing.length > 0) {
@@ -260,7 +272,7 @@ class AttendanceController {
   }
 
   // Append attendance record to CSV
-  static appendToCSV(roll_number, student_name, session_id, token, device_id, latitude, longitude, selfie, callback) {
+  static appendToCSV(roll_number, student_name, session_id, token, device_id, latitude, longitude, gps_accuracy, distance_from_class_meters, selfie, anomaly_flags, anomaly_score, anomaly_severity, anomaly_review_status, anomaly_notes, lecturer_id, callback) {
     const scanTime = new Date().toISOString();
     const status = 'present';
     // Ensure values are strings and fallback to empty.
@@ -275,7 +287,15 @@ class AttendanceController {
       device_id: AttendanceController.csvSafe(device_id),
       latitude: AttendanceController.csvSafe(latitude),
       longitude: AttendanceController.csvSafe(longitude),
-      selfie: AttendanceController.csvSafe(selfie)
+      gps_accuracy: AttendanceController.csvSafe(gps_accuracy),
+      distance_from_class_meters: AttendanceController.csvSafe(distance_from_class_meters),
+      selfie: AttendanceController.csvSafe(selfie),
+      anomaly_flags: AttendanceController.csvSafe(anomaly_flags),
+      anomaly_score: AttendanceController.csvSafe(anomaly_score),
+      anomaly_severity: AttendanceController.csvSafe(anomaly_severity),
+      anomaly_review_status: AttendanceController.csvSafe(anomaly_review_status),
+      anomaly_notes: AttendanceController.csvSafe(anomaly_notes),
+      lecturer_id: AttendanceController.csvSafe(lecturer_id)
     };
 
     let headers = [
@@ -288,7 +308,8 @@ class AttendanceController {
       'device_id',
       'latitude',
       'longitude',
-      'selfie'
+      'selfie',
+      'lecturer_id'
     ];
     try {
       const content = fs.readFileSync(ATTENDANCE_FILE, 'utf8');
@@ -323,7 +344,15 @@ class AttendanceController {
         device_id: recordValues.device_id,
         latitude: recordValues.latitude,
         longitude: recordValues.longitude,
-        selfie: recordValues.selfie
+        gps_accuracy: recordValues.gps_accuracy,
+        distance_from_class_meters: recordValues.distance_from_class_meters,
+        selfie: recordValues.selfie,
+        anomaly_flags: recordValues.anomaly_flags,
+        anomaly_score: parseInt(recordValues.anomaly_score) || 0,
+        anomaly_severity: recordValues.anomaly_severity,
+        anomaly_review_status: recordValues.anomaly_review_status,
+        anomaly_notes: recordValues.anomaly_notes,
+        lecturer_id: recordValues.lecturer_id
       });
     });
   }
@@ -360,6 +389,11 @@ class AttendanceController {
       rawBody.longitude ||
       rawBody.lng ||
       rawBody.lon ||
+      null;
+    const gps_accuracy =
+      rawBody.gps_accuracy ||
+      rawBody.accuracy ||
+      rawBody.gpsAccuracy ||
       null;
     const selfie = rawBody.selfie;
     const selfie_path = rawBody.selfie_path;
@@ -431,6 +465,13 @@ class AttendanceController {
 
       const session_id = validationResult.session_id;
       console.log(`[ATTENDANCE_TOKEN_VALID] Session ID linked to token: ${session_id}`);
+      console.log('[ATTENDANCE_SCAN] Token scanned by Android', {
+        token,
+        session_id,
+        roll_number,
+        student_name,
+        timestamp: new Date().toISOString()
+      });
 
       // Step 1.5: Check session attendance window
       SessionController.getSessionById(session_id, (err, session) => {
@@ -488,80 +529,135 @@ class AttendanceController {
 
         console.log(`[ATTENDANCE_WINDOW_VALID] Window still open for session ${session_id}`);
 
-        // Step 2: Check for duplicate device_id in this session
-        AttendanceController.checkDeviceDuplicate(device_id, session_id, (err, isDeviceDuplicate) => {
+        // Get lecturer_id from session lecturer_name
+        db.get(`SELECT id FROM users WHERE name = ? AND role = 'lecturer'`, [session.lecturer_name], (err, lecturer) => {
           if (err) {
-            console.error('Error checking device duplicate:', err);
+            console.error('Error getting lecturer:', err);
             return res.status(500).json({
               status: 'error',
               message: 'Internal server error'
             });
           }
 
-          console.log(`[ATTENDANCE_DEVICE_CHECK] Device ${device_id}, Session ${session_id}, Device Used: ${isDeviceDuplicate}`);
+          const lecturer_id = lecturer ? lecturer.id : '';
 
-          if (isDeviceDuplicate) {
-            console.log(`[ATTENDANCE_FAILED] Device ${device_id} already used for session ${session_id}`);
-            return res.status(400).json({
-              status: 'error',
-              message: 'This device has already marked attendance for this session'
-            });
-          }
-
-          // Step 3: Check for duplicate roll_number in this session
-          AttendanceController.checkDuplicate(roll_number, session_id, (err, isRollDuplicate) => {
+          // Step 2: Check for duplicate device_id in this session
+          AttendanceController.checkDeviceDuplicate(device_id, session_id, (err, isDeviceDuplicate) => {
             if (err) {
-              console.error('Error checking roll duplicate:', err);
+              console.error('Error checking device duplicate:', err);
               return res.status(500).json({
                 status: 'error',
                 message: 'Internal server error'
               });
             }
 
-            console.log(`[ATTENDANCE_ROLL_CHECK] Roll ${roll_number}, Session ${session_id}, Roll Used: ${isRollDuplicate}`);
+            console.log(`[ATTENDANCE_DEVICE_CHECK] Device ${device_id}, Session ${session_id}, Device Used: ${isDeviceDuplicate}`);
 
-            if (isRollDuplicate) {
-              console.log(`[ATTENDANCE_FAILED] Attendance already recorded for roll ${roll_number} in session ${session_id}`);
+            if (isDeviceDuplicate) {
+              console.log(`[ATTENDANCE_FAILED] Device ${device_id} already used for session ${session_id}`);
               return res.status(400).json({
                 status: 'error',
-                message: 'Attendance already recorded'
+                message: 'This device has already marked attendance for this session'
               });
             }
 
-            // Step 4: Append to CSV file (include optional extras)
-            AttendanceController.appendToCSV(
-              roll_number,
-              student_name,
-              session_id,
-              token,
-              device_id,
-              latitude,
-              longitude,
-              selfieValue,
-              (err, record) => {
-                if (err) {
-                  console.error('Error appending to CSV:', err);
-                  console.log(`[CSV_ERROR] File path: ${ATTENDANCE_FILE}`);
-                  return res.status(500).json({
-                    status: 'error',
-                    message: 'Failed to record attendance'
-                  });
-                }
-
-                console.log(
-                  `[ATTENDANCE_SUCCESS] Recorded to CSV: Roll ${roll_number}, Session ${session_id}, ` +
-                    `Device ${record.device_id || 'N/A'}, Latitude ${record.latitude || 'N/A'}, ` +
-                    `Longitude ${record.longitude || 'N/A'}, Selfie ${record.selfie ? 'yes' : 'no'}`
-                );
-                console.log(`  File: ${ATTENDANCE_FILE}`);
-                console.log(`  Scan time: ${record.scanTime}`);
-
-                res.json({
-                  status: 'success',
-                  message: 'Attendance recorded'
+            // Step 3: Check for duplicate roll_number in this session
+            AttendanceController.checkDuplicate(roll_number, session_id, (err, isRollDuplicate) => {
+              if (err) {
+                console.error('Error checking roll duplicate:', err);
+                return res.status(500).json({
+                  status: 'error',
+                  message: 'Internal server error'
                 });
               }
-            );
+
+              console.log(`[ATTENDANCE_ROLL_CHECK] Roll ${roll_number}, Session ${session_id}, Roll Used: ${isRollDuplicate}`);
+
+              if (isRollDuplicate) {
+                console.log(`[ATTENDANCE_FAILED] Attendance already recorded for roll ${roll_number} in session ${session_id}`);
+                return res.status(400).json({
+                  status: 'error',
+                  message: 'Attendance already recorded'
+                });
+              }
+
+              // Step 4: Perform anomaly detection
+              const attendanceData = {
+                latitude,
+                longitude,
+                gps_accuracy,
+                device_id,
+                selfie: selfieValue,
+                scan_time: new Date().toISOString(),
+                roll_number,
+                session_id: session_id.toString()
+              };
+
+              const anomalyResult = AnomalyDetector.detectAnomalies(attendanceData, {
+                class_latitude: session.class_latitude,
+                class_longitude: session.class_longitude,
+                allowed_radius_meters: session.allowed_radius_meters,
+                start_time: session.start_time,
+                end_time: session.end_time,
+                session_date: session.session_date
+              });
+
+              // Add distance to attendance data if calculated
+              if (attendanceData.distance_from_class_meters !== undefined) {
+                attendanceData.distance_from_class_meters = attendanceData.distance_from_class_meters;
+              }
+
+              console.log(`[ANOMALY_DETECTION] Roll ${roll_number}, Session ${session_id}:`, {
+                flags: anomalyResult.anomaly_flags,
+                score: anomalyResult.anomaly_score,
+                severity: anomalyResult.anomaly_severity,
+                distance: attendanceData.distance_from_class_meters
+              });
+
+              // Step 5: Append to CSV file (include anomaly data)
+              AttendanceController.appendToCSV(
+                roll_number,
+                student_name,
+                session_id,
+                token,
+                device_id,
+                latitude,
+                longitude,
+                gps_accuracy,
+                attendanceData.distance_from_class_meters || '',
+                selfieValue,
+                anomalyResult.anomaly_flags,
+                anomalyResult.anomaly_score,
+                anomalyResult.anomaly_severity,
+                anomalyResult.anomaly_review_status,
+                anomalyResult.anomaly_notes,
+                lecturer_id,
+                (err, record) => {
+                  if (err) {
+                    console.error('Error appending to CSV:', err);
+                    console.log(`[CSV_ERROR] File path: ${ATTENDANCE_FILE}`);
+                    return res.status(500).json({
+                      status: 'error',
+                      message: 'Failed to record attendance'
+                    });
+                  }
+
+                  console.log(
+                    `[ATTENDANCE_SUCCESS] Recorded to CSV: Roll ${roll_number}, Session ${session_id}, ` +
+                      `Device ${record.device_id || 'N/A'}, Latitude ${record.latitude || 'N/A'}, ` +
+                      `Longitude ${record.longitude || 'N/A'}, Selfie ${record.selfie ? 'yes' : 'no'}` +
+                      `Lecturer ID ${record.lecturer_id || 'N/A'}`
+                  );
+                  console.log(`  File: ${ATTENDANCE_FILE}`);
+                  console.log(`  Scan time: ${record.scanTime}`);
+
+                  res.json({
+                    status: 'success',
+                    message: 'Attendance recorded'
+                  });
+                }
+              );
+            });
           });
         });
       });
@@ -569,7 +665,7 @@ class AttendanceController {
   }
 
   // Get attendance records for a session from CSV
-  static getSessionAttendance(req, res) {
+  static async getSessionAttendance(req, res) {
     const { session_id } = req.params;
 
     if (!session_id) {
@@ -579,53 +675,77 @@ class AttendanceController {
       });
     }
 
-    AttendanceController.ensureDataFile();
-
-    fs.readFile(ATTENDANCE_FILE, 'utf8', (err, data) => {
-      if (err) {
-        console.error('Error reading attendance file:', err);
-        return res.status(500).json({
+    try {
+      const sessions = await getAllSessions();
+      const session = sessions.find(s => s.session_id == session_id);
+      if (!session) {
+        return res.status(404).json({
           status: 'error',
-          message: 'Internal server error'
+          message: 'Session not found'
         });
       }
 
-      const allLines = data.split('\n');
-      const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
-      const lines = allLines.slice(1); // Skip header
-      const records = lines
-        .filter(line => line.trim())
-        .map(line => {
-          const parts = line.split(',');
-          const roll_number = parts[idx.roll_number ?? 0] || '';
-          const student_name = parts[idx.student_name ?? 1] || '';
-          const sess_id = parts[idx.session_id ?? 2] || '';
-          const token = parts[idx.token ?? 3] || '';
-          const scan_time = parts[idx.scan_time ?? 4] || '';
-          const status = parts[idx.status ?? 5] || '';
-          const device_id = parts[idx.device_id ?? 6] || '';
-          const latitude = parts[idx.latitude ?? 7] || '';
-          const longitude = parts[idx.longitude ?? 8] || '';
-          const selfie = parts[idx.selfie ?? 9] || '';
-          return { roll_number, student_name, session_id: sess_id, token, scan_time, status, device_id, latitude, longitude, selfie };
-        })
-        .filter(record => record.session_id === session_id);
+      if (req.user.role === 'lecturer' && session.lecturer_id !== req.user.userId) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Access denied'
+        });
+      }
 
-      console.log('[SESSION_ATTENDANCE_PARSED]', {
-        session_id,
-        count: records.length,
-        sample: records.slice(0, 3)
-      });
+      AttendanceController.ensureDataFile();
 
-      res.json({
-        status: 'success',
-        data: records
+      fs.readFile(ATTENDANCE_FILE, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading attendance file:', err);
+          return res.status(500).json({
+            status: 'error',
+            message: 'Internal server error'
+          });
+        }
+
+        const allLines = data.split('\n');
+        const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
+        const lines = allLines.slice(1); // Skip header
+        const records = lines
+          .filter(line => line.trim())
+          .map(line => {
+            const parts = line.split(',');
+            const roll_number = parts[idx.roll_number ?? 0] || '';
+            const student_name = parts[idx.student_name ?? 1] || '';
+            const sess_id = parts[idx.session_id ?? 2] || '';
+            const token = parts[idx.token ?? 3] || '';
+            const scan_time = parts[idx.scan_time ?? 4] || '';
+            const status = parts[idx.status ?? 5] || '';
+            const device_id = parts[idx.device_id ?? 6] || '';
+            const latitude = parts[idx.latitude ?? 7] || '';
+            const longitude = parts[idx.longitude ?? 8] || '';
+            const selfie = parts[idx.selfie ?? 9] || '';
+            return { roll_number, student_name, session_id: sess_id, token, scan_time, status, device_id, latitude, longitude, selfie };
+          })
+          .filter(record => record.session_id === session_id);
+
+        console.log('[SESSION_ATTENDANCE_PARSED]', {
+          session_id,
+          count: records.length,
+          sample: records.slice(0, 3)
+        });
+
+        res.json({
+          status: 'success',
+          data: records
+        });
       });
-    });
+    } catch (err) {
+      console.error('Error in getSessionAttendance:', err);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
   }
 
   // Get all attendance records from CSV
-  static getAllAttendance(req, res) {
+  static async getAllAttendance(req, res) {
     console.log(`[RECORDS_REQUEST] Fetching all attendance records`);
     console.log(`  File path: ${ATTENDANCE_FILE}`);
 
@@ -652,7 +772,7 @@ class AttendanceController {
       const allLines = data.split('\n');
       const { idx } = AttendanceController.getHeaderIndexes(allLines[0]);
       const lines = allLines.slice(1); // Skip header
-      const records = lines
+      let records = lines
         .filter(line => line.trim())
         .map(line => {
           const parts = line.split(',');
@@ -669,23 +789,37 @@ class AttendanceController {
           return { roll_number, student_name, session_id, token, scan_time, status, device_id, latitude, longitude, selfie };
         });
 
-      console.log(`[RECORDS_SUCCESS] Total records returned: ${records.length}`);
-      console.log('[ALL_ATTENDANCE_PARSED_SAMPLE]', records.slice(0, 3));
-
-      res.json({
-        status: 'success',
-        records: records
-      });
+      // Filter for lecturers
+      if (req.user.role === 'lecturer') {
+        getAllSessions().then(sessions => {
+          const lecturerSessionIds = sessions.filter(s => s.lecturer_id === req.user.userId).map(s => s.session_id);
+          records = records.filter(r => lecturerSessionIds.includes(r.session_id));
+          console.log(`[RECORDS_SUCCESS] Filtered records for lecturer ${req.user.userId}: ${records.length}`);
+          res.json({
+            status: 'success',
+            records: records
+          });
+        }).catch(err => {
+          console.error('[RECORDS_FILTER_ERROR]', err);
+          res.status(500).json({ status: 'error', message: 'Failed to filter records' });
+        });
+      } else {
+        console.log(`[RECORDS_SUCCESS] Total records returned: ${records.length}`);
+        res.json({
+          status: 'success',
+          records: records
+        });
+      }
     });
   }
 
   // Download attendance records CSV
-  static downloadAttendance(req, res) {
+  static async downloadAttendance(req, res) {
     console.log(`[DOWNLOAD_REQUEST] Attendance CSV download requested`);
     console.log(`  File path: ${ATTENDANCE_FILE}`);
 
     // Check if file exists
-    fs.access(ATTENDANCE_FILE, fs.constants.F_OK, (err) => {
+    fs.access(ATTENDANCE_FILE, fs.constants.F_OK, async (err) => {
       if (err) {
         console.log(`[DOWNLOAD_FILE_MISSING] File not found: ${ATTENDANCE_FILE}`);
         return res.status(404).json({
@@ -695,7 +829,7 @@ class AttendanceController {
       }
 
       // Read and modify the CSV to make it readable
-      fs.readFile(ATTENDANCE_FILE, 'utf8', (err, data) => {
+      fs.readFile(ATTENDANCE_FILE, 'utf8', async (err, data) => {
         if (err) {
           console.error(`[DOWNLOAD_ERROR] Error reading file: ${err.message}`);
           return res.status(500).json({
@@ -704,7 +838,25 @@ class AttendanceController {
           });
         }
 
-        const lines = data.split('\n');
+        let lines = data.split('\n');
+        if (req.user.role === 'lecturer') {
+          try {
+            const sessions = await getAllSessions();
+            const lecturerSessionIds = sessions.filter(s => s.lecturer_id === req.user.userId).map(s => s.session_id);
+            const header = lines[0];
+            const dataLines = lines.slice(1).filter(line => {
+              if (!line.trim()) return false;
+              const parts = line.split(',');
+              const session_id = parseInt(parts[2]); // assuming session_id is 3rd column
+              return lecturerSessionIds.includes(session_id);
+            });
+            lines = [header, ...dataLines];
+          } catch (filterErr) {
+            console.error('[DOWNLOAD_FILTER_ERROR]', filterErr);
+            return res.status(500).json({ status: 'error', message: 'Failed to filter download' });
+          }
+        }
+
         if (lines.length > 0) {
           const headerCols = lines[0].split(',');
           const selfieIdx = headerCols.indexOf('selfie');
